@@ -6,29 +6,29 @@
          (for [[p {:keys [cv n]}] m]
            (for [_ (range n)] {:p p :cv cv :hits 0}))))
 
-(def airstrikes-v2 [[{:p 1/6 :cv 3 :hits 0}]
-                    [{:p 2/6 :cv 3 :hits 0}]
-                    [{:p 3/6 :cv 3 :hits 0}]])
+(def airstrikes [[{:p 1/6 :cv 3 :hits 0}]
+                 [{:p 2/6 :cv 3 :hits 0}]
+                 [{:p 3/6 :cv 3 :hits 0}]])
 
-(def attackers-v2 [;; 16 double-fire (df)
-                   [{:p 2/6 :cv 4 :hits 0}
-                    {:p 2/6 :cv 4 :hits 0}
-                    {:p 2/6 :cv 4 :hits 0}
-                    {:p 2/6 :cv 4 :hits 0}]
+(def attackers [;; 16 double-fire (df)
+                [{:p 2/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}]
 
-                   ;; 4 single-fire (sf) + 12 df
-                   [{:p 1/6 :cv 4 :hits 0}
-                    {:p 2/6 :cv 4 :hits 0}
-                    {:p 2/6 :cv 4 :hits 0}
-                    {:p 2/6 :cv 4 :hits 0}]
+                ;; 4 single-fire (sf) + 12 df
+                [{:p 1/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}]
 
-                   ;; 3 sf + 9 df (soviets typically)
-                   [{:p 1/6 :cv 3 :hits 0}
-                    {:p 2/6 :cv 3 :hits 0}
-                    {:p 2/6 :cv 3 :hits 0}
-                    {:p 2/6 :cv 3 :hits 0}]])
+                ;; 3 sf + 9 df (soviets typically)
+                [{:p 1/6 :cv 3 :hits 0}
+                 {:p 2/6 :cv 3 :hits 0}
+                 {:p 2/6 :cv 3 :hits 0}
+                 {:p 2/6 :cv 3 :hits 0}]])
 
-(def defenders-v2
+(def defenders
   (concat
     ;; cases:
     ;; - 16df (4 blocks)
@@ -73,9 +73,9 @@
     ))
 
 (def scenarios
-  (for [airstrike airstrikes-v2
-        attacker attackers-v2
-        defender defenders-v2]
+  (for [airstrike airstrikes
+        attacker attackers
+        defender defenders]
     [airstrike attacker defender]))
 
 (defn sort-by-next-victim
