@@ -1,18 +1,76 @@
 (ns main)
 
+(defn pool
+  [m]
+  (apply concat
+         (for [[p {:keys [cv n]}] m]
+           (for [_ (range n)] {:p p :cv cv :hits 0}))))
+
 (def airstrikes-v2 [[{:p 1/6 :cv 3 :hits 0}]
                     [{:p 2/6 :cv 3 :hits 0}]
                     [{:p 3/6 :cv 3 :hits 0}]])
 
-(def attackers-v2 [[{:p 2/6 :cv 4 :hits 0}
+(def attackers-v2 [;; 16 double-fire (df)
+                   [{:p 2/6 :cv 4 :hits 0}
                     {:p 2/6 :cv 4 :hits 0}
                     {:p 2/6 :cv 4 :hits 0}
-                    {:p 2/6 :cv 4 :hits 0}]])
+                    {:p 2/6 :cv 4 :hits 0}]
 
-(def defenders-v2 [[{:p 2/6 :cv 4 :hits 0}
+                   ;; 4 single-fire (sf) + 12 df
+                   [{:p 1/6 :cv 4 :hits 0}
                     {:p 2/6 :cv 4 :hits 0}
                     {:p 2/6 :cv 4 :hits 0}
-                    {:p 2/6 :cv 4 :hits 0}]])
+                    {:p 2/6 :cv 4 :hits 0}]
+
+                   ;; 3 sf + 9 df (soviets typically)
+                   [{:p 1/6 :cv 3 :hits 0}
+                    {:p 2/6 :cv 3 :hits 0}
+                    {:p 2/6 :cv 3 :hits 0}
+                    {:p 2/6 :cv 3 :hits 0}]])
+
+(def defenders-v2
+  (concat
+    ;; cases:
+    ;; - 16df (4 blocks)
+    ;; - 8df + 8sf (4 blocks)
+    ;; - 4df + 12sf (4 blocks)
+    ;; - 16sf (4 blocks)
+    ;; - 12df (4 blocks)
+    ;; - 9df + 3sf (4 blocks)
+    ;; - 6df + 6sf (4 blocks)
+    ;; - 6df + 3sf (3 blocks)
+    ;; - 3df + 9sf (4 blocks)
+    ;; - 3df + 6sf (3 blocks)
+    ;; - 3df + 3sf (2 blocks)
+    ;; - 12df (3 blocks)
+    ;; - 9df (3 blocks)
+    ;; - 8df (2 blocks)
+    ;; - 6df (2 blocks)
+    ;; - 4df (1 block)
+    ;; - 3df (1 block)
+    ;; - 4df + 4df (2 blocks)
+    ;; - 4df + 8sf (3 blocks)
+    ;; - 8df + 4sf (3 blocks)
+    ;; - 12df + 4sf (4 blocks)
+
+    (mapcat concat
+            (for [cv [3 4]
+                  x (range 1 5)]
+              (for [y (range (- 5 x))]
+                (pool {2/6 {:cv cv :n x}
+                       1/6 {:cv cv :n y}}))))
+
+    ;; cases:
+    ;; - 12sf (3 blocks)
+    ;; - 9sf (3 blocks)
+    ;; - 8sf (2 blocks)
+    ;; - 6sf (2 blocks)
+    ;; - 4sf (1 block)
+    ;; - 3sf (1 block)
+    (for [cv [3 4]
+          x (range 1 4)]
+      (pool {1/6 {:cv cv :n x}}))
+    ))
 
 (def scenarios
   (for [airstrike airstrikes-v2
@@ -60,6 +118,7 @@
    defending unit in terms of firepower. For every full step of `hits-required-for-full-step`
    reduce `:cv` from block."
   [pool hits hits-required-for-full-step]
+  #_(prn ::subtract pool hits hits-required-for-full-step)
   (reduce
     (fn [pool _]
       (let [pool (sort-by-next-victim pool)]
@@ -74,6 +133,7 @@
    - :ceil (typically for calculating an optimistic attacker result)
    - :floor (typically used for calculating the defender's dice throws)"
   [pool strategy]
+  #_(prn ::dice-roll pool strategy)
   (let [hits (reduce
                (fn [hits [p n]]
                  (+ hits (* p n)))
@@ -116,16 +176,35 @@
           airstrike-1st-reduced (subtract airstrike-start 1 1)]
       #_(prn ::1st-battle-turn [airstrike-1st-reduced attacker-1st defender-1st-final])
       ;; 2nd battle turn
-      (let [airstrike-2nd-hits (dice-roll airstrike-1st-reduced :ceil)
-            defender-2nd (subtract defender-1st-final airstrike-2nd-hits hits-required-for-full-step)
+      (let [airstrike-2nd-start (reset-hits airstrike-1st-reduced)
+            attacker-2nd-start (reset-hits attacker-1st)
+            defender-2nd-start (reset-hits defender-1st-final)
+            airstrike-2nd-hits (dice-roll airstrike-2nd-start :ceil)
+            defender-2nd (subtract defender-2nd-start airstrike-2nd-hits hits-required-for-full-step)
             defender-2nd-hits (dice-roll defender-2nd :floor)
-            attacker-2nd (subtract attacker-1st defender-2nd-hits hits-required-for-full-step)
+            attacker-2nd (subtract attacker-2nd-start defender-2nd-hits hits-required-for-full-step)
             attacker-2nd-hits (dice-roll attacker-2nd :ceil)
             defender-2nd-final (subtract defender-2nd attacker-2nd-hits hits-required-for-full-step)
             airstrike-2nd-reduced (subtract airstrike-1st-reduced 1 1)]
         #_(prn ::2nd-battle-turn [airstrike-2nd-reduced attacker-2nd defender-2nd-final])
-        {:1st [airstrike-1st-reduced attacker-1st defender-1st-final]
-         :2nd [airstrike-2nd-reduced attacker-2nd defender-2nd-final]}))))
+        {:1st {:airstrike airstrike-1st-reduced
+               :attacker attacker-1st
+               :defender defender-1st-final
+               :hits {:airstrike airstrike-1st-hits
+                      :attacker attacker-1st-hits
+                      :defender defender-1st-hits}}
+         :2nd {:airstrike airstrike-2nd-reduced
+               :attacker attacker-2nd
+               :defender defender-2nd-final
+               :hits {:airstrike airstrike-2nd-hits
+                      :attacker attacker-2nd-hits
+                      :defender defender-2nd-hits}}
+         :sum {:hits {:hits-dealt (+ defender-1st-hits
+                                     defender-2nd-hits)
+                      :hits-taken (+ airstrike-1st-hits
+                                     airstrike-2nd-hits
+                                     attacker-1st-hits
+                                     attacker-2nd-hits)}}}))))
 
 (comment
   (map (fn [scenario] {scenario (simulate scenario)}) scenarios))
