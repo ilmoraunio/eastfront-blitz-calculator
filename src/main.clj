@@ -157,9 +157,9 @@
      dice with remaining force pool, hits are subtracted from the attacker's
      force pool (to attacker's benefit). Finally, attacker resolves all dice,
      hits are subtracted from defender's force pool."
-  [[airstrike-start attacker-start defender-start :as _scenario]]
+  [[airstrike-start attacker-start defender-start :as scenario]]
   (let [hits-required-for-full-step 1]                      ; todo
-    #_(prn ::scenario _scenario)
+    #_(prn ::scenario scenario)
     ;; 1st battle turn
     (let [airstrike-1st-hits (dice-roll airstrike-start :ceil)
           defender-1st (subtract defender-start airstrike-1st-hits hits-required-for-full-step)
@@ -181,7 +181,8 @@
             defender-2nd-final (subtract defender-2nd attacker-2nd-hits hits-required-for-full-step)
             airstrike-2nd-reduced (subtract airstrike-1st-reduced 1 1)]
         #_(prn ::2nd-battle-turn [airstrike-2nd-reduced attacker-2nd defender-2nd-final])
-        {:1st {:airstrike airstrike-1st-reduced
+        {:scenario scenario
+         :1st {:airstrike airstrike-1st-reduced
                :attacker attacker-1st
                :defender defender-1st-final
                :hits {:airstrike airstrike-1st-hits
@@ -201,4 +202,4 @@
                                      attacker-2nd-hits)}}}))))
 
 (comment
-  (map (fn [scenario] {scenario (simulate scenario)}) scenarios))
+  (mapcat vals (map (fn [scenario] {scenario (simulate scenario)}) scenarios)))
