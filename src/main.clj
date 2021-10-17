@@ -150,12 +150,6 @@
    blocks with a given combat value `:cv` (denoting amount of dice thrown) and
    probability `:p` (to denote the successful values of a dice throw). Simulates
    the first and second combat turn of a blitz attack using Eastfront II rules†.
-   Provides the results in following format:
-
-   ```
-   [[pool]  ; after 1st battle turn
-    [pool]] ; after 2nd battle turn
-   ```
 
    † Rules generally: Airstrike dice are resolved for attacker only and resolved
      first, hits are subtracted from defender's force pool (subtractions are
