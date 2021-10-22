@@ -194,12 +194,17 @@
                :hits {:airstrike airstrike-2nd-hits
                       :attacker attacker-2nd-hits
                       :defender defender-2nd-hits}}
-         :sum {:hits {:hits-dealt (+ defender-1st-hits
-                                     defender-2nd-hits)
-                      :hits-taken (+ airstrike-1st-hits
-                                     airstrike-2nd-hits
-                                     attacker-1st-hits
-                                     attacker-2nd-hits)}}}))))
+         :agg {:hits-dealt (+ defender-1st-hits
+                              defender-2nd-hits)
+               :hits-taken (+ airstrike-1st-hits
+                              airstrike-2nd-hits
+                              attacker-1st-hits
+                              attacker-2nd-hits)}}))))
+
+(def simulations
+  (->> scenarios
+    (map (fn [scenario] {scenario (simulate scenario)}))
+    (mapcat vals)))
 
 (comment
   (mapcat vals (map (fn [scenario] {scenario (simulate scenario)}) scenarios)))
