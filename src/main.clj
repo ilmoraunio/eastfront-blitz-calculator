@@ -1,4 +1,6 @@
-(ns main)
+(ns main
+  (:require [clojure.data.csv :as csv]
+            [clojure.java.io :as io]))
 
 (defn pool
   [m]
@@ -207,4 +209,9 @@
     (mapcat vals)))
 
 (comment
-  (mapcat vals (map (fn [scenario] {scenario (simulate scenario)}) scenarios)))
+  (with-open [writer (io/writer "out-file.csv")]
+    (csv/write-csv writer
+                   [["" "Hits taken" "Hits dealt"]
+                    ["" "SF" "" "DF" "" "TF" ""]
+                    ["16DF vs 16DF B III" 7 9 9 11 9 12]]))
+  )
