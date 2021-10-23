@@ -1,6 +1,7 @@
 (ns main
   (:require [clojure.data.csv :as csv]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.string :as str]))
 
 (defn pool
   [m]
@@ -71,14 +72,16 @@
     ;; - 3sf (1 block)
     (for [cv [3 4]
           x (range 1 4)]
-      (pool {1/6 {:cv cv :n x}}))
-    ))
+      (pool {1/6 {:cv cv :n x}}))))
+
+(def hits-required-for-full-step [1 2])
 
 (def scenarios
   (for [airstrike airstrikes
         attacker attackers
-        defender defenders]
-    [airstrike attacker defender]))
+        defender defenders
+        hits-required hits-required-for-full-step]
+    [airstrike attacker defender hits-required]))
 
 (defn sort-by-next-victim
   [pool]
@@ -159,67 +162,106 @@
      dice with remaining force pool, hits are subtracted from the attacker's
      force pool (to attacker's benefit). Finally, attacker resolves all dice,
      hits are subtracted from defender's force pool."
-  [[airstrike-start attacker-start defender-start :as scenario]]
-  (let [hits-required-for-full-step 1]                      ; todo
-    #_(prn ::scenario scenario)
-    ;; 1st battle turn
-    (let [airstrike-1st-hits (dice-roll airstrike-start :ceil)
-          defender-1st (subtract defender-start airstrike-1st-hits hits-required-for-full-step)
-          defender-1st-hits (dice-roll defender-1st :floor)
-          attacker-1st (subtract attacker-start defender-1st-hits hits-required-for-full-step)
-          attacker-1st-hits (dice-roll attacker-1st :ceil)
-          defender-1st-final (subtract defender-1st attacker-1st-hits hits-required-for-full-step)
-          airstrike-1st-reduced (subtract airstrike-start 1 1)]
-      #_(prn ::1st-battle-turn [airstrike-1st-reduced attacker-1st defender-1st-final])
-      ;; 2nd battle turn
-      (let [airstrike-2nd-start (reset-hits airstrike-1st-reduced)
-            attacker-2nd-start (reset-hits attacker-1st)
-            defender-2nd-start (reset-hits defender-1st-final)
-            airstrike-2nd-hits (dice-roll airstrike-2nd-start :ceil)
-            defender-2nd (subtract defender-2nd-start airstrike-2nd-hits hits-required-for-full-step)
-            defender-2nd-hits (dice-roll defender-2nd :floor)
-            attacker-2nd (subtract attacker-2nd-start defender-2nd-hits hits-required-for-full-step)
-            attacker-2nd-hits (dice-roll attacker-2nd :ceil)
-            defender-2nd-final (subtract defender-2nd attacker-2nd-hits hits-required-for-full-step)
-            airstrike-2nd-reduced (subtract airstrike-1st-reduced 1 1)]
-        #_(prn ::2nd-battle-turn [airstrike-2nd-reduced attacker-2nd defender-2nd-final])
-        {:scenario scenario
-         :1st {:airstrike airstrike-1st-reduced
-               :attacker attacker-1st
-               :defender defender-1st-final
-               :hits {:airstrike airstrike-1st-hits
-                      :attacker attacker-1st-hits
-                      :defender defender-1st-hits}}
-         :2nd {:airstrike airstrike-2nd-reduced
-               :attacker attacker-2nd
-               :defender defender-2nd-final
-               :hits {:airstrike airstrike-2nd-hits
-                      :attacker attacker-2nd-hits
-                      :defender defender-2nd-hits}}
-         :agg {:hits-dealt (+ defender-1st-hits
-                              defender-2nd-hits)
-               :hits-taken (+ airstrike-1st-hits
-                              airstrike-2nd-hits
-                              attacker-1st-hits
-                              attacker-2nd-hits)}}))))
+  [[airstrike-start attacker-start defender-start hits-required-for-full-step
+    :as scenario]]
+  #_(prn ::scenario scenario)
+  ;; 1st battle turn
+  (let [airstrike-1st-hits (dice-roll airstrike-start :ceil)
+        defender-1st (subtract defender-start airstrike-1st-hits hits-required-for-full-step)
+        defender-1st-hits (dice-roll defender-1st :floor)
+        attacker-1st (subtract attacker-start defender-1st-hits hits-required-for-full-step)
+        attacker-1st-hits (dice-roll attacker-1st :ceil)
+        defender-1st-final (subtract defender-1st attacker-1st-hits hits-required-for-full-step)
+        airstrike-1st-reduced (subtract airstrike-start 1 1)]
+    #_(prn ::1st-battle-turn [airstrike-1st-reduced attacker-1st defender-1st-final])
+    ;; 2nd battle turn
+    (let [airstrike-2nd-start (reset-hits airstrike-1st-reduced)
+          attacker-2nd-start (reset-hits attacker-1st)
+          defender-2nd-start (reset-hits defender-1st-final)
+          airstrike-2nd-hits (dice-roll airstrike-2nd-start :ceil)
+          defender-2nd (subtract defender-2nd-start airstrike-2nd-hits hits-required-for-full-step)
+          defender-2nd-hits (dice-roll defender-2nd :floor)
+          attacker-2nd (subtract attacker-2nd-start defender-2nd-hits hits-required-for-full-step)
+          attacker-2nd-hits (dice-roll attacker-2nd :ceil)
+          defender-2nd-final (subtract defender-2nd attacker-2nd-hits hits-required-for-full-step)
+          airstrike-2nd-reduced (subtract airstrike-1st-reduced 1 1)]
+      #_(prn ::2nd-battle-turn [airstrike-2nd-reduced attacker-2nd defender-2nd-final])
+      {:scenario scenario
+       :1st {:airstrike airstrike-1st-reduced
+             :attacker attacker-1st
+             :defender defender-1st-final
+             :hits {:airstrike airstrike-1st-hits
+                    :attacker attacker-1st-hits
+                    :defender defender-1st-hits}}
+       :2nd {:airstrike airstrike-2nd-reduced
+             :attacker attacker-2nd
+             :defender defender-2nd-final
+             :hits {:airstrike airstrike-2nd-hits
+                    :attacker attacker-2nd-hits
+                    :defender defender-2nd-hits}}
+       :agg {:hits-dealt (+ defender-1st-hits
+                            defender-2nd-hits)
+             :hits-taken (+ airstrike-1st-hits
+                            airstrike-2nd-hits
+                            attacker-1st-hits
+                            attacker-2nd-hits)}})))
 
 (def simulations
   (->> scenarios
     (map (fn [scenario] {scenario (simulate scenario)}))
     (mapcat vals)))
 
-(comment
+(defn firepower-explained
+  [pool]
+  (str/join " " (map (fn [[p n]]
+                       (str n (case p
+                                1/6 "SF"
+                                2/6 "DF"
+                                3/6 "TF"
+                                (throw (ex-info "invalid value" {:p p})))))
+                     ;; TF > DF > SF
+                     (sort #(compare %2 %1) (dices-thrown pool)))))
+
+(defn explain
+  [[airstrike attacker defender hits-required :as scenario]]
+  (format (case hits-required
+            2 "%s vs %s Blitz %s (double defense)"
+            1 "%s vs %s Blitz %s"
+            (throw (ex-info "invalid value" {:hits-required hits-required
+                                             :scenario scenario})))
+          (firepower-explained defender)
+          (firepower-explained attacker)
+          (case (-> airstrike first :cv)
+            1 "I"
+            2 "II"
+            3 "III"
+            (throw (ex-info "invalid value" {:airstrike airstrike})))))
+
+(defn to-csv
+  [simulations]
   (->> simulations
+    ;; group together different airstrike (SF, DF, TF) scenarios
     (group-by (juxt #(conj [] (-> %
                                 (get-in [:scenario 0 0])
                                 (select-keys [:cv])))
                     #(get-in % [:scenario 1])
-                    #(get-in % [:scenario 2])))
-    (sort-by #(get-in % [:scenario #_"based on strength of airstrike" 0 0 :p])))
+                    #(get-in % [:scenario 2])
+                    #(get-in % [:scenario 3])))
+    ;; by airstrike: SF < DF < TF
+    (sort-by #(get-in % [:scenario #_"based on strength of airstrike" 0 0 :p]))
+    (map (fn [[general-scenario simulations]]
+           (concat [(explain general-scenario)]
+                   (mapcat (fn [simulation]
+                             [(get-in simulation [:agg :hits-taken])
+                              (get-in simulation [:agg :hits-dealt])])
+                           simulations))))
+    ;; sort by description (lexicographic asc)
+    (sort-by first)))
 
+(defn to-csv!
+  [simulations]
   (with-open [writer (io/writer "out-file.csv")]
     (csv/write-csv writer
-                   [["" "Hits taken" "Hits dealt"]
-                    ["" "SF" "" "DF" "" "TF" ""]
-                    ["16DF vs 16DF B III" 7 9 9 11 9 12]]))
-  )
+                   (concat [["" "Hits taken" "Hits dealt"]
+                            ["" "SF" "" "DF" "" "TF" ""]]
+                           (to-csv simulations)))))
