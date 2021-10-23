@@ -209,6 +209,14 @@
     (mapcat vals)))
 
 (comment
+  (->> simulations
+    (group-by (juxt #(conj [] (-> %
+                                (get-in [:scenario 0 0])
+                                (select-keys [:cv])))
+                    #(get-in % [:scenario 1])
+                    #(get-in % [:scenario 2])))
+    (sort-by #(get-in % [:scenario #_"based on strength of airstrike" 0 0 :p])))
+
   (with-open [writer (io/writer "out-file.csv")]
     (csv/write-csv writer
                    [["" "Hits taken" "Hits dealt"]
