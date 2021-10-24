@@ -150,6 +150,10 @@
       :debug hits
       (throw (ex-info "invalid strategy" {})))))
 
+(defn calc-hits
+  [n hits-required]
+  (Math/floor (/ n hits-required)))
+
 (defn simulate
   "Simulates a given scenario given as a triplet of maps containing pool of
    blocks with a given combat value `:cv` (denoting amount of dice thrown) and
@@ -166,10 +170,11 @@
     :as scenario]]
   #_(prn ::scenario scenario)
   ;; 1st battle turn
-  (let [airstrike-1st-hits (dice-roll airstrike-start :ceil)
+  (let [hits-req hits-required-for-full-step
+        airstrike-1st-hits (dice-roll airstrike-start :ceil)
         defender-1st (subtract defender-start airstrike-1st-hits hits-required-for-full-step)
         defender-1st-hits (dice-roll defender-1st :floor)
-        attacker-1st (subtract attacker-start defender-1st-hits hits-required-for-full-step)
+        attacker-1st (subtract attacker-start defender-1st-hits 1)
         attacker-1st-hits (dice-roll attacker-1st :ceil)
         defender-1st-final (subtract defender-1st attacker-1st-hits hits-required-for-full-step)
         airstrike-1st-reduced (subtract airstrike-start 1 1)]
@@ -181,7 +186,7 @@
           airstrike-2nd-hits (dice-roll airstrike-2nd-start :ceil)
           defender-2nd (subtract defender-2nd-start airstrike-2nd-hits hits-required-for-full-step)
           defender-2nd-hits (dice-roll defender-2nd :floor)
-          attacker-2nd (subtract attacker-2nd-start defender-2nd-hits hits-required-for-full-step)
+          attacker-2nd (subtract attacker-2nd-start defender-2nd-hits 1)
           attacker-2nd-hits (dice-roll attacker-2nd :ceil)
           defender-2nd-final (subtract defender-2nd attacker-2nd-hits hits-required-for-full-step)
           airstrike-2nd-reduced (subtract airstrike-1st-reduced 1 1)]
@@ -192,19 +197,27 @@
              :defender defender-1st-final
              :hits {:airstrike airstrike-1st-hits
                     :attacker attacker-1st-hits
-                    :defender defender-1st-hits}}
+                    :defender defender-1st-hits}
+             :agg {:hits-dealt (calc-hits defender-1st-hits 1)
+                   :hits-taken (calc-hits (+ airstrike-1st-hits
+                                             attacker-1st-hits)
+                                          hits-req)}}
        :2nd {:airstrike airstrike-2nd-reduced
              :attacker attacker-2nd
              :defender defender-2nd-final
              :hits {:airstrike airstrike-2nd-hits
                     :attacker attacker-2nd-hits
-                    :defender defender-2nd-hits}}
-       :agg {:hits-dealt (+ defender-1st-hits
-                            defender-2nd-hits)
-             :hits-taken (+ airstrike-1st-hits
-                            airstrike-2nd-hits
-                            attacker-1st-hits
-                            attacker-2nd-hits)}})))
+                    :defender defender-2nd-hits}
+             :agg {:hits-dealt (calc-hits defender-2nd-hits 1)
+                   :hits-taken (calc-hits (+ airstrike-2nd-hits
+                                             attacker-2nd-hits)
+                                          hits-req)}}
+       :agg {:hits-dealt (calc-hits (+ defender-1st-hits defender-2nd-hits) 1)
+             :hits-taken (calc-hits (+ airstrike-1st-hits
+                                       airstrike-2nd-hits
+                                       attacker-1st-hits
+                                       attacker-2nd-hits)
+                                    hits-req)}})))
 
 (def simulations
   (->> scenarios
@@ -238,61 +251,65 @@
             (throw (ex-info "invalid value" {:airstrike airstrike})))))
 
 (defn to-csv
-  [simulations]
-  (->> simulations
-    ;; group together different airstrike (SF, DF, TF) scenarios
-    (group-by (juxt #(conj [] (-> %
-                                (get-in [:scenario 0 0])
-                                (select-keys [:cv])))
-                    #(get-in % [:scenario 1])
-                    #(get-in % [:scenario 2])
-                    #(get-in % [:scenario 3])))
-    ;; by airstrike: SF < DF < TF
-    (sort-by #(get-in % [:scenario #_"based on strength of airstrike" 0 0 :p]))
-    (map (fn [[general-scenario simulations]]
-           (with-meta (concat [(explain general-scenario)]
-                    (mapcat (fn [simulation]
-                              [(get-in simulation [:agg :hits-taken])
-                               (get-in simulation [:agg :hits-dealt])])
-                            simulations))
-                      {:general-scenario general-scenario})))
-    (sort-by
-      (juxt
-        ;; sum of defender DF cvs
-        (fn [entry]
-          (let [[_airstrike-strength attacker defender hits
-                 :as general-scenario] (-> entry meta :general-scenario)]
-            (get (dices-thrown defender) 2/6)))
-        ;; sum of defender cvs
-        (fn [entry]
-          (let [[_airstrike-strength attacker defender hits
-                 :as general-scenario] (-> entry meta :general-scenario)]
-            (apply + (map second (dices-thrown defender)))))
-        ;; sum of attacker DF cvs
-        (fn [entry]
-          (let [[_airstrike-strength attacker defender hits
-                 :as general-scenario] (-> entry meta :general-scenario)]
-            (get (dices-thrown attacker) 2/6)))
-        ;; sum of attacker cvs
-        (fn [entry]
-          (let [[_airstrike-strength attacker defender hits
-                 :as general-scenario] (-> entry meta :general-scenario)]
-            (apply + (map second (dices-thrown attacker)))))
-        ;; double defense follows always
-        (fn [entry]
-          (let [[_airstrike-strength attacker defender hits
-                 :as general-scenario] (-> entry meta :general-scenario)]
-            (case hits
-              2 1
-              1 2
-              (throw (ex-info "unknown value" hits))))))
-      #(compare %2 %1))
-    (distinct)))
+  [simulations hq-activation]
+  (assert (#{:regular :blitz} hq-activation))
+  (let [scope (case hq-activation
+                :regular [:1st :agg]
+                :blitz [:agg])]
+    (->> simulations
+      ;; group together different airstrike (SF, DF, TF) scenarios
+      (group-by (juxt #(conj [] (-> %
+                                  (get-in [:scenario 0 0])
+                                  (select-keys [:cv])))
+                      #(get-in % [:scenario 1])
+                      #(get-in % [:scenario 2])
+                      #(get-in % [:scenario 3])))
+      ;; by airstrike: SF < DF < TF
+      (sort-by #(get-in % [:scenario #_"based on strength of airstrike" 0 0 :p]))
+      (map (fn [[general-scenario simulations]]
+             (with-meta (concat [(explain general-scenario)]
+                                (mapcat (fn [simulation]
+                                          [(get-in simulation (concat scope [:hits-taken]))
+                                           (get-in simulation (concat scope [:hits-dealt]))])
+                                        simulations))
+                        {:general-scenario general-scenario})))
+      (sort-by
+        (juxt
+          ;; sum of defender DF cvs
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (get (dices-thrown defender) 2/6)))
+          ;; sum of defender cvs
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (apply + (map second (dices-thrown defender)))))
+          ;; sum of attacker DF cvs
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (get (dices-thrown attacker) 2/6)))
+          ;; sum of attacker cvs
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (apply + (map second (dices-thrown attacker)))))
+          ;; double defense follows always
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (case hits
+                2 1
+                1 2
+                (throw (ex-info "unknown value" hits))))))
+        #(compare %2 %1))
+      (distinct))))
 
 (defn to-csv!
-  [simulations]
-  (with-open [writer (io/writer "out-file.csv")]
+  [simulations scope]
+  (with-open [writer (io/writer (format "simulate-%s.csv" (name scope)))]
     (csv/write-csv writer
                    (concat [["" "Hits taken" "Hits dealt"]
                             ["" "SF" "" "DF" "" "TF" ""]]
-                           (to-csv simulations)))))
+                           (to-csv simulations scope)))))
