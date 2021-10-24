@@ -13,7 +13,19 @@
                  [{:p 2/6 :cv 3 :hits 0}]
                  [{:p 3/6 :cv 3 :hits 0}]])
 
-(def attackers [;; 16 double-fire (df)
+(def attackers [;; 4 triple-fire (tf) + 12 double-fire (df) (axis only)
+                [{:p 3/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}]
+
+                ;; 4 tf + 8 df + 4 sf (axis only)
+                [{:p 3/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}
+                 {:p 2/6 :cv 4 :hits 0}
+                 {:p 1/6 :cv 4 :hits 0}]
+
+                ;; 16 df
                 [{:p 2/6 :cv 4 :hits 0}
                  {:p 2/6 :cv 4 :hits 0}
                  {:p 2/6 :cv 4 :hits 0}
@@ -72,7 +84,19 @@
     ;; - 3sf (1 block)
     (for [cv [3 4]
           x (range 1 4)]
-      (pool {1/6 {:cv cv :n x}}))))
+      (pool {1/6 {:cv cv :n x}}))
+
+    ;; case: 16sf (4 blocks)
+    [(pool {1/6 {:cv 4 :n 4}})]
+
+    ;; case: 4 tf + 12 df (4 blocks)
+    [(pool {3/6 {:cv 4 :n 1}
+            2/6 {:cv 4 :n 3}})]
+
+    ;; case: 4 tf + 8 df + 4 sf (4 blocks)
+    [(pool {3/6 {:cv 4 :n 1}
+            2/6 {:cv 4 :n 2}
+            1/6 {:cv 4 :n 1}})]))
 
 (def hits-required-for-full-step [1 2])
 
@@ -275,6 +299,11 @@
                         {:general-scenario general-scenario})))
       (sort-by
         (juxt
+          ;; sum of defender TF cvs
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (get (dices-thrown defender) 3/6)))
           ;; sum of defender DF cvs
           (fn [entry]
             (let [[_airstrike-strength attacker defender hits
@@ -285,6 +314,11 @@
             (let [[_airstrike-strength attacker defender hits
                    :as general-scenario] (-> entry meta :general-scenario)]
               (apply + (map second (dices-thrown defender)))))
+          ;; sum of attacker TF cvs
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (get (dices-thrown attacker) 3/6)))
           ;; sum of attacker DF cvs
           (fn [entry]
             (let [[_airstrike-strength attacker defender hits
@@ -304,7 +338,9 @@
                 1 2
                 (throw (ex-info "unknown value" hits))))))
         #(compare %2 %1))
-      (distinct))))
+      (distinct)
+      ;; soviets don't have TF
+      (remove #(->> % first (re-find #"TF.+TF"))))))
 
 (defn to-csv!
   [simulations scope]
