@@ -250,13 +250,44 @@
     ;; by airstrike: SF < DF < TF
     (sort-by #(get-in % [:scenario #_"based on strength of airstrike" 0 0 :p]))
     (map (fn [[general-scenario simulations]]
-           (concat [(explain general-scenario)]
-                   (mapcat (fn [simulation]
-                             [(get-in simulation [:agg :hits-taken])
-                              (get-in simulation [:agg :hits-dealt])])
-                           simulations))))
-    ;; sort by description (lexicographic asc)
-    (sort-by first)))
+           (with-meta (concat [(explain general-scenario)]
+                    (mapcat (fn [simulation]
+                              [(get-in simulation [:agg :hits-taken])
+                               (get-in simulation [:agg :hits-dealt])])
+                            simulations))
+                      {:general-scenario general-scenario})))
+    (sort-by
+      (juxt
+        ;; sum of defender DF cvs
+        (fn [entry]
+          (let [[_airstrike-strength attacker defender hits
+                 :as general-scenario] (-> entry meta :general-scenario)]
+            (get (dices-thrown defender) 2/6)))
+        ;; sum of defender cvs
+        (fn [entry]
+          (let [[_airstrike-strength attacker defender hits
+                 :as general-scenario] (-> entry meta :general-scenario)]
+            (apply + (map second (dices-thrown defender)))))
+        ;; sum of attacker DF cvs
+        (fn [entry]
+          (let [[_airstrike-strength attacker defender hits
+                 :as general-scenario] (-> entry meta :general-scenario)]
+            (get (dices-thrown attacker) 2/6)))
+        ;; sum of attacker cvs
+        (fn [entry]
+          (let [[_airstrike-strength attacker defender hits
+                 :as general-scenario] (-> entry meta :general-scenario)]
+            (apply + (map second (dices-thrown attacker)))))
+        ;; double defense follows always
+        (fn [entry]
+          (let [[_airstrike-strength attacker defender hits
+                 :as general-scenario] (-> entry meta :general-scenario)]
+            (case hits
+              2 1
+              1 2
+              (throw (ex-info "unknown value" hits))))))
+      #(compare %2 %1))
+    (distinct)))
 
 (defn to-csv!
   [simulations]
