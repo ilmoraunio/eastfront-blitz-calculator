@@ -346,9 +346,8 @@
   [simulations scope]
   (with-open [writer (io/writer (format "simulate-%s.csv" (name scope)))]
     (csv/write-csv writer
-                   (concat [[""
-                             "Hits taken" "Hits dealt"
-                             "Hits taken" "Hits dealt"
-                             "Hits taken" "Hits dealt"]
-                            ["" "SF" "" "DF" "" "TF" ""]]
+                   (concat [["Scenario"
+                             "Hits taken (SF)" "Hits dealt (SF)"
+                             "Hits taken (DF)" "Hits dealt (DF)"
+                             "Hits taken (TF)" "Hits dealt (TF)"]]
                            (to-csv simulations scope)))))
