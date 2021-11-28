@@ -262,8 +262,8 @@
 (defn explain
   [[airstrike attacker defender hits-required :as scenario]]
   (format (case hits-required
-            2 "%s vs %s Blitz %s (double defense)"
-            1 "%s vs %s Blitz %s"
+            2 "%s vs %s %s (double defense)"
+            1 "%s vs %s %s"
             (throw (ex-info "invalid value" {:hits-required hits-required
                                              :scenario scenario})))
           (firepower-explained defender)
@@ -273,6 +273,25 @@
             2 "II"
             3 "III"
             (throw (ex-info "invalid value" {:airstrike airstrike})))))
+
+(defn explain-attacker
+  [[airstrike attacker defender hits-required :as scenario]]
+  (format "%s %s"
+          (firepower-explained attacker)
+          (case (-> airstrike first :cv)
+            1 "I"
+            2 "II"
+            3 "III"
+            (throw (ex-info "invalid value" {:airstrike airstrike})))))
+
+(defn explain-defender
+  [[airstrike attacker defender hits-required :as scenario]]
+  (format (case hits-required
+            2 "%s (double defense)"
+            1 "%s"
+            (throw (ex-info "invalid value" {:hits-required hits-required
+                                             :scenario scenario})))
+          (firepower-explained defender)))
 
 (defn to-csv
   [simulations hq-activation]
@@ -292,6 +311,8 @@
       (sort-by #(get-in % [:scenario #_"based on strength of airstrike" 0 0 :p]))
       (map (fn [[general-scenario simulations]]
              (with-meta (concat [(explain general-scenario)]
+                                [(explain-defender general-scenario)]
+                                [(explain-attacker general-scenario)]
                                 (mapcat (fn [simulation]
                                           [(get-in simulation (concat scope [:hits-taken]))
                                            (get-in simulation (concat scope [:hits-dealt]))])
@@ -347,6 +368,8 @@
   (with-open [writer (io/writer (format "simulate-%s.csv" (name scope)))]
     (csv/write-csv writer
                    (concat [["Scenario"
+                             "Defender"
+                             "Attacker"
                              "Hits taken (SF)" "Hits dealt (SF)"
                              "Hits taken (DF)" "Hits dealt (DF)"
                              "Hits taken (TF)" "Hits dealt (TF)"]]
