@@ -461,8 +461,8 @@
 (defn explain-replacement-strategy
   [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
   (case replacement-strategy
-    :lowest-p "Replace armor"
-    :highest-p "Replace infantry"
+    :lowest-p "Infantry first"
+    :highest-p "Armor first"
     ""))
 
 (defn to-csv
@@ -557,6 +557,7 @@
                              "Defender"
                              "Attacker"
                              "Reinforcements"
+                             "Replacement strategy"
                              "Hits taken (SF)" "Hits dealt (SF)"
                              "Hits taken (DF)" "Hits dealt (DF)"
                              "Hits taken (TF)" "Hits dealt (TF)"]]
