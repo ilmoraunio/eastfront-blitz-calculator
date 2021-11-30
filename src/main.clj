@@ -105,11 +105,154 @@
         attacker attackers
         defender defenders
         hits-required hits-required-for-full-step]
-    [airstrike attacker defender hits-required]))
+    [airstrike attacker defender hits-required nil nil]))
+
+(def replacement-strategies
+  {:lowest-p (juxt (comp + :p) (comp + :cv))
+   :highest-p (juxt (comp - :p) (comp + :cv))})
+
+(def airstrikes-v2 airstrikes)
+(def attackers-v2
+  [;; 4 triple-fire (tf) + 12 double-fire (df) (axis only)
+   [[{:p 3/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :lowest-p]
+   [[{:p 3/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :highest-p]
+
+   [[{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 3/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :lowest-p]
+   [[{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 3/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :highest-p]
+
+   ;; 4 tf + 8 df + 4 sf (axis only)
+   [[{:p 3/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 1/6 :cv 4 :hits 0}]
+    :lowest-p]
+   [[{:p 3/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 1/6 :cv 4 :hits 0}]
+    :highest-p]
+
+   [[{:p 1/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 3/6 :cv 4 :hits 0}]
+    :lowest-p]
+   [[{:p 1/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 3/6 :cv 4 :hits 0}]
+    :highest-p]
+
+   [[{:p 1/6 :cv 4 :hits 0}
+     {:p 3/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :lowest-p]
+   [[{:p 1/6 :cv 4 :hits 0}
+     {:p 3/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :highest-p]
+
+   [[{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 1/6 :cv 4 :hits 0}
+     {:p 3/6 :cv 4 :hits 0}]
+    :lowest-p]
+   [[{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 1/6 :cv 4 :hits 0}
+     {:p 3/6 :cv 4 :hits 0}]
+    :highest-p]
+
+   ;; 16 df
+   [[{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :lowest-p]
+   [[{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :highest-p]
+
+   ;; 4 single-fire (sf) + 12 df
+   [[{:p 1/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :lowest-p]
+   [[{:p 1/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :highest-p]
+
+   [[{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 1/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :lowest-p]
+   [[{:p 2/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    [{:p 1/6 :cv 4 :hits 0}
+     {:p 2/6 :cv 4 :hits 0}]
+    :highest-p]
+
+   ;; 3 sf + 9 df (soviets typically)
+   [[{:p 1/6 :cv 3 :hits 0}
+     {:p 2/6 :cv 3 :hits 0}]
+    [{:p 2/6 :cv 3 :hits 0}
+     {:p 2/6 :cv 3 :hits 0}]
+    :lowest-p]
+   [[{:p 1/6 :cv 3 :hits 0}
+     {:p 2/6 :cv 3 :hits 0}]
+    [{:p 2/6 :cv 3 :hits 0}
+     {:p 2/6 :cv 3 :hits 0}]
+    :highest-p]
+
+   [[{:p 2/6 :cv 3 :hits 0}
+     {:p 2/6 :cv 3 :hits 0}]
+    [{:p 1/6 :cv 3 :hits 0}
+     {:p 2/6 :cv 3 :hits 0}]
+    :lowest-p]
+   [[{:p 2/6 :cv 3 :hits 0}
+     {:p 2/6 :cv 3 :hits 0}]
+    [{:p 1/6 :cv 3 :hits 0}
+     {:p 2/6 :cv 3 :hits 0}]
+    :highest-p]])
+(def defenders-v2 defenders)
+(def hits-required-for-full-step-v2 hits-required-for-full-step)
+
+(def scenarios-v2
+  (for [airstrike airstrikes-v2
+        [attacker reinforcement replacement-strategy] attackers-v2
+        defender defenders-v2
+        hits-required hits-required-for-full-step-v2]
+    [airstrike attacker defender hits-required reinforcement replacement-strategy]))
 
 (defn sort-by-next-victim
-  [pool]
-  (sort-by (juxt (comp - :hits) (comp - :cv) (comp + :p)) pool))
+  ([f pool]
+   (sort-by f pool))
+  ([pool]
+   (sort-by-next-victim (juxt (comp - :hits) (comp - :cv) (comp + :p)) pool)))
 
 (defn dices-thrown
   "Returns `{p n}` for `pool` where p is the dice's probability and n the amount
@@ -136,6 +279,16 @@
           (when (not (eliminated? block))
             block))
         block))))
+
+(defn reinforce-pool
+  [pool reinforcement replacement-strategy]
+  (let [pool (sort-by-next-victim
+               (replacement-strategies replacement-strategy)
+               pool)
+        reinforced-pool (concat pool reinforcement)]
+    (if (> (count reinforced-pool) 4)
+      (drop (max 0 (- (count reinforced-pool) 4)) reinforced-pool)
+      reinforced-pool)))
 
 (defn reset-hits
   [pool]
@@ -190,7 +343,12 @@
      dice with remaining force pool, hits are subtracted from the attacker's
      force pool (to attacker's benefit). Finally, attacker resolves all dice,
      hits are subtracted from defender's force pool."
-  [[airstrike-start attacker-start defender-start hits-required-for-full-step
+  [[airstrike-start
+    attacker-start
+    defender-start
+    hits-required-for-full-step
+    reinforcement
+    replacement-strategy
     :as scenario]]
   #_(prn ::scenario scenario)
   ;; 1st battle turn
@@ -205,7 +363,9 @@
     #_(prn ::1st-battle-turn [airstrike-1st-reduced attacker-1st defender-1st-final])
     ;; 2nd battle turn
     (let [airstrike-2nd-start (reset-hits airstrike-1st-reduced)
-          attacker-2nd-start (reset-hits attacker-1st)
+          attacker-2nd-start (cond-> (reset-hits attacker-1st)
+                               reinforcement (reinforce-pool reinforcement
+                                                             replacement-strategy))
           defender-2nd-start (reset-hits defender-1st-final)
           airstrike-2nd-hits (dice-roll airstrike-2nd-start :ceil)
           defender-2nd (subtract defender-2nd-start airstrike-2nd-hits hits-required-for-full-step)
@@ -248,6 +408,11 @@
     (map (fn [scenario] {scenario (simulate scenario)}))
     (mapcat vals)))
 
+(def simulations-v2
+  (->> scenarios-v2
+    (map (fn [scenario] {scenario (simulate scenario)}))
+    (mapcat vals)))
+
 (defn firepower-explained
   [pool]
   (str/join " " (map (fn [[p n]]
@@ -259,30 +424,26 @@
                      ;; TF > DF > SF
                      (sort #(compare %2 %1) (dices-thrown pool)))))
 
-(defn explain
-  [[airstrike attacker defender hits-required :as scenario]]
-  (format (case hits-required
-            2 "%s vs %s %s (double defense)"
-            1 "%s vs %s %s"
-            (throw (ex-info "invalid value" {:hits-required hits-required
-                                             :scenario scenario})))
-          (firepower-explained defender)
-          (firepower-explained attacker)
+(defn explain-attacker
+  [[airstrike attacker defender hits-required reinforcement :as scenario]]
+  (format "%s %s"
+          (cond-> (firepower-explained attacker)
+            reinforcement (str " + " (firepower-explained reinforcement)))
           (case (-> airstrike first :cv)
             1 "I"
             2 "II"
             3 "III"
             (throw (ex-info "invalid value" {:airstrike airstrike})))))
 
-(defn explain-attacker
-  [[airstrike attacker defender hits-required :as scenario]]
-  (format "%s %s"
-          (firepower-explained attacker)
-          (case (-> airstrike first :cv)
-            1 "I"
-            2 "II"
-            3 "III"
-            (throw (ex-info "invalid value" {:airstrike airstrike})))))
+(defn explain
+  [[airstrike attacker defender hits-required reinforcement :as scenario]]
+  (format (case hits-required
+            2 "%s (double defense) vs %s"
+            1 "%s vs %s"
+            (throw (ex-info "invalid value" {:hits-required hits-required
+                                             :scenario scenario})))
+          (firepower-explained defender)
+          (explain-attacker scenario)))
 
 (defn explain-defender
   [[airstrike attacker defender hits-required :as scenario]]
@@ -292,6 +453,17 @@
             (throw (ex-info "invalid value" {:hits-required hits-required
                                              :scenario scenario})))
           (firepower-explained defender)))
+
+(defn explain-reinforcements
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy :as scenario]]
+  (firepower-explained reinforcements))
+
+(defn explain-replacement-strategy
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
+  (case replacement-strategy
+    :lowest-p "Replace armor"
+    :highest-p "Replace infantry"
+    ""))
 
 (defn to-csv
   [simulations hq-activation]
@@ -306,13 +478,17 @@
                                   (select-keys [:cv])))
                       #(get-in % [:scenario 1])
                       #(get-in % [:scenario 2])
-                      #(get-in % [:scenario 3])))
+                      #(get-in % [:scenario 3])
+                      #(get-in % [:scenario 4])
+                      #(get-in % [:scenario 5])))
       ;; by airstrike: SF < DF < TF
       (sort-by #(get-in % [:scenario #_"based on strength of airstrike" 0 0 :p]))
       (map (fn [[general-scenario simulations]]
              (with-meta (concat [(explain general-scenario)]
                                 [(explain-defender general-scenario)]
                                 [(explain-attacker general-scenario)]
+                                [(explain-reinforcements general-scenario)]
+                                [(explain-replacement-strategy general-scenario)]
                                 (mapcat (fn [simulation]
                                           [(get-in simulation (concat scope [:hits-taken]))
                                            (get-in simulation (concat scope [:hits-dealt]))])
@@ -320,6 +496,14 @@
                         {:general-scenario general-scenario})))
       (sort-by
         (juxt
+          ;; double defense grouped at the bottom
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (case hits
+                2 1
+                1 2
+                (throw (ex-info "unknown value" hits)))))
           ;; sum of defender TF cvs
           (fn [entry]
             (let [[_airstrike-strength attacker defender hits
@@ -350,14 +534,13 @@
             (let [[_airstrike-strength attacker defender hits
                    :as general-scenario] (-> entry meta :general-scenario)]
               (apply + (map second (dices-thrown attacker)))))
-          ;; double defense follows always
+          ;; infantry shown first
           (fn [entry]
-            (let [[_airstrike-strength attacker defender hits
+            (let [[_airstrike-strength attacker defender hits reinforcement replacement-strategy
                    :as general-scenario] (-> entry meta :general-scenario)]
-              (case hits
-                2 1
-                1 2
-                (throw (ex-info "unknown value" hits))))))
+              (case replacement-strategy
+                :lowest-p 1
+                :highest-p 2))))
         #(compare %2 %1))
       (distinct)
       ;; soviets don't have TF
@@ -365,11 +548,14 @@
 
 (defn to-csv!
   [simulations scope]
-  (with-open [writer (io/writer (format "simulate-%s.csv" (name scope)))]
+  (with-open [writer (io/writer (format "simulate-%s.%s.csv"
+                                        (name scope)
+                                        (quot (System/currentTimeMillis) 1000)))]
     (csv/write-csv writer
                    (concat [["Scenario"
                              "Defender"
                              "Attacker"
+                             "Reinforcements"
                              "Hits taken (SF)" "Hits dealt (SF)"
                              "Hits taken (DF)" "Hits dealt (DF)"
                              "Hits taken (TF)" "Hits dealt (TF)"]]
