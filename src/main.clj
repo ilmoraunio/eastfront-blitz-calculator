@@ -495,6 +495,14 @@
                         {:general-scenario general-scenario})))
       (sort-by
         (juxt
+          ;; armor-dropped first strategy grouped at the bottom
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits reinforcement replacement-strategy
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (case replacement-strategy
+                :lowest-p 2
+                :highest-p 1
+                0)))
           ;; double defense grouped at the bottom
           (fn [entry]
             (let [[_airstrike-strength attacker defender hits
@@ -547,15 +555,7 @@
           (fn [entry]
             (let [[_airstrike-strength attacker defender hits reinforcement
                    :as general-scenario] (-> entry meta :general-scenario)]
-              (apply + (map second (dices-thrown reinforcement)))))
-          ;; infantry shown first
-          (fn [entry]
-            (let [[_airstrike-strength attacker defender hits reinforcement replacement-strategy
-                   :as general-scenario] (-> entry meta :general-scenario)]
-              (case replacement-strategy
-                :lowest-p 1
-                :highest-p 2
-                0))))
+              (apply + (map second (dices-thrown reinforcement))))))
         #(compare %2 %1))
       (distinct)
       ;; soviets don't have TF
