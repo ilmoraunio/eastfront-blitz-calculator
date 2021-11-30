@@ -540,7 +540,8 @@
                    :as general-scenario] (-> entry meta :general-scenario)]
               (case replacement-strategy
                 :lowest-p 1
-                :highest-p 2))))
+                :highest-p 2
+                0))))
         #(compare %2 %1))
       (distinct)
       ;; soviets don't have TF
