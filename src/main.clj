@@ -487,7 +487,6 @@
              (with-meta (concat [(explain general-scenario)]
                                 [(explain-defender general-scenario)]
                                 [(explain-attacker general-scenario)]
-                                [(explain-reinforcements general-scenario)]
                                 [(explain-replacement-strategy general-scenario)]
                                 (mapcat (fn [simulation]
                                           [(get-in simulation (concat scope [:hits-taken]))
@@ -534,6 +533,21 @@
             (let [[_airstrike-strength attacker defender hits
                    :as general-scenario] (-> entry meta :general-scenario)]
               (apply + (map second (dices-thrown attacker)))))
+          ;; sum of reinforcement TF cvs
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits reinforcement
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (get (dices-thrown reinforcement) 3/6)))
+          ;; sum of reinforcement DF cvs
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits reinforcement
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (get (dices-thrown reinforcement) 2/6)))
+          ;; sum of reinforcement cvs
+          (fn [entry]
+            (let [[_airstrike-strength attacker defender hits reinforcement
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (apply + (map second (dices-thrown reinforcement)))))
           ;; infantry shown first
           (fn [entry]
             (let [[_airstrike-strength attacker defender hits reinforcement replacement-strategy
@@ -548,15 +562,14 @@
       (remove #(->> % first (re-find #"TF.+TF"))))))
 
 (defn to-csv!
-  [simulations scope]
+  [simulations scope label]
   (with-open [writer (io/writer (format "simulate-%s.%s.csv"
                                         (name scope)
-                                        (quot (System/currentTimeMillis) 1000)))]
+                                        (name label)))]
     (csv/write-csv writer
                    (concat [["Scenario"
                              "Defender"
                              "Attacker"
-                             "Reinforcements"
                              "Replacement strategy"
                              "Hits taken (SF)" "Hits dealt (SF)"
                              "Hits taken (DF)" "Hits dealt (DF)"
