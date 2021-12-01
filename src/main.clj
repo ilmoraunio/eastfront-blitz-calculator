@@ -10,10 +10,10 @@
          (for [[p {:keys [cv n]}] m]
            (for [_ (range n)] {:p p :cv cv :hits 0}))))
 
-(defn gen-pool
+(defn gen-attackers
   ([pool starting-force-n]
    (mapcat (fn [strategy]
-             (gen-pool pool starting-force-n strategy))
+             (gen-attackers pool starting-force-n strategy))
            [:lowest-p :highest-p]))
   ([pool starting-force-n replacement-strategy]
    (->> (combo/permutations pool)
@@ -256,12 +256,12 @@
 (def scenarios-1
   (for [airstrike airstrikes
         [attacker reinforcement replacement-strategy]
-        (concat (gen-pool [{:p 1/6 :cv 4 :hits 0}] 1 nil)
-                (gen-pool [{:p 2/6 :cv 4 :hits 0}] 1 nil)
-                (gen-pool [{:p 3/6 :cv 4 :hits 0}] 1 nil)
-                (gen-pool [{:p 1/6 :cv 3 :hits 0}] 1 nil)
-                (gen-pool [{:p 2/6 :cv 3 :hits 0}] 1 nil)
-                (gen-pool [{:p 3/6 :cv 3 :hits 0}] 1 nil))
+        (concat (gen-attackers [{:p 1/6 :cv 4 :hits 0}] 1 nil)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}] 1 nil)
+                (gen-attackers [{:p 3/6 :cv 4 :hits 0}] 1 nil)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}] 1 nil)
+                (gen-attackers [{:p 2/6 :cv 3 :hits 0}] 1 nil)
+                (gen-attackers [{:p 3/6 :cv 3 :hits 0}] 1 nil))
         defender defenders
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
@@ -269,34 +269,34 @@
 (def scenarios-1+2
   (for [airstrike airstrikes
         [attacker reinforcement replacement-strategy]
-        (concat (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 3/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 3/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 3/6 :cv 4 :hits 0}]
-                          1))
+        (concat (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               1))
         defender defenders
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
@@ -304,51 +304,51 @@
 (def scenarios-1+3
   (for [airstrike airstrikes
         [attacker reinforcement replacement-strategy]
-        (concat (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 3/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 3/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 2/6 :cv 4 :hits 0}
-                           {:p 3/6 :cv 4 :hits 0}]
-                          1)
-                (gen-pool [{:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 1/6 :cv 4 :hits 0}
-                           {:p 3/6 :cv 4 :hits 0}]
-                          1))
+        (concat (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               1))
         defender defenders
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
@@ -595,16 +595,6 @@
 (defn wrap-simulation
   [scenarios]
   (->> scenarios
-    (map (fn [scenario] {scenario (simulate scenario)}))
-    (mapcat vals)))
-
-(def simulations-4-no-reinforcement
-  (->> scenarios-4-no-reinforcement
-    (map (fn [scenario] {scenario (simulate scenario)}))
-    (mapcat vals)))
-
-(def simulations-2+2
-  (->> scenarios-2+2
     (map (fn [scenario] {scenario (simulate scenario)}))
     (mapcat vals)))
 
