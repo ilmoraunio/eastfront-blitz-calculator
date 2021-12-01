@@ -454,10 +454,6 @@
                                              :scenario scenario})))
           (firepower-explained defender)))
 
-(defn explain-reinforcements
-  [[airstrike attacker defender hits-required reinforcements replacement-strategy :as scenario]]
-  (firepower-explained reinforcements))
-
 (defn explain-replacement-strategy
   [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
   (case replacement-strategy
