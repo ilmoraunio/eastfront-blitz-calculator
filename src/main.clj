@@ -651,7 +651,10 @@
   (assert (#{:regular :blitz} hq-activation))
   (let [scope (case hq-activation
                 :regular [:1st :agg]
-                :blitz [:agg])]
+                :blitz [:agg])
+        result-scope (case hq-activation
+                       :regular :1st
+                       :blitz :2nd)]
     (->> scenarios
       (wrap-simulation)
       ;; group together different airstrike (SF, DF, TF) scenarios
@@ -677,10 +680,10 @@
                                        (get-in simulation (concat scope [:hits-dealt])))
                                      simulations)
                                 (map (fn [simulation]
-                                       (firepower-explained (get-in simulation [:1st :defender])))
+                                       (firepower-explained (get-in simulation [result-scope :defender])))
                                      simulations)
                                 (map (fn [simulation]
-                                       (firepower-explained (get-in simulation [:1st :attacker])))
+                                       (firepower-explained (get-in simulation [result-scope :attacker])))
                                      simulations))
                         {:general-scenario general-scenario})))
       (sort-by
