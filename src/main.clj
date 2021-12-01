@@ -100,19 +100,11 @@
 
 (def hits-required-for-full-step [1 2])
 
-(def scenarios
-  (for [airstrike airstrikes
-        attacker attackers
-        defender defenders
-        hits-required hits-required-for-full-step]
-    [airstrike attacker defender hits-required nil nil]))
-
 (def replacement-strategies
   {:lowest-p (juxt (comp + :p) (comp + :cv))
    :highest-p (juxt (comp - :p) (comp + :cv))})
 
-(def airstrikes-v2 airstrikes)
-(def attackers-v2
+(def attackers-2+2
   [;; 4 triple-fire (tf) + 12 double-fire (df) (axis only)
    [[{:p 3/6 :cv 4 :hits 0}
      {:p 2/6 :cv 4 :hits 0}]
@@ -238,14 +230,19 @@
     [{:p 1/6 :cv 3 :hits 0}
      {:p 2/6 :cv 3 :hits 0}]
     :highest-p]])
-(def defenders-v2 defenders)
-(def hits-required-for-full-step-v2 hits-required-for-full-step)
 
-(def scenarios-v2
-  (for [airstrike airstrikes-v2
-        [attacker reinforcement replacement-strategy] attackers-v2
-        defender defenders-v2
-        hits-required hits-required-for-full-step-v2]
+(def scenarios-4-no-reinforcement
+  (for [airstrike airstrikes
+        attacker attackers
+        defender defenders
+        hits-required hits-required-for-full-step]
+    [airstrike attacker defender hits-required nil nil]))
+
+(def scenarios-2+2
+  (for [airstrike airstrikes
+        [attacker reinforcement replacement-strategy] attackers-2+2
+        defender defenders
+        hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
 
 (defn sort-by-next-victim
@@ -403,13 +400,13 @@
                                        attacker-2nd-hits)
                                     hits-req)}})))
 
-(def simulations
-  (->> scenarios
+(def simulations-4-no-reinforcement
+  (->> scenarios-4-no-reinforcement
     (map (fn [scenario] {scenario (simulate scenario)}))
     (mapcat vals)))
 
-(def simulations-v2
-  (->> scenarios-v2
+(def simulations-2+2
+  (->> scenarios-2+2
     (map (fn [scenario] {scenario (simulate scenario)}))
     (mapcat vals)))
 
@@ -585,7 +582,7 @@
 
 (comment
   (do
-    (to-csv! simulations :regular :v1)
-    (to-csv! simulations :blitz :v1)
-    (to-csv! simulations-v2 :regular :v2)
-    (to-csv! simulations-v2 :blitz :v2)))
+    (to-csv! simulations-4-no-reinforcement :regular :v1)
+    (to-csv! simulations-4-no-reinforcement :blitz :v1)
+    (to-csv! simulations-2+2 :regular :v2)
+    (to-csv! simulations-2+2 :blitz :v2)))
