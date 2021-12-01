@@ -1,1 +1,2 @@
-{:deps {org.clojure/data.csv {:mvn/version "1.0.0"}}}
+{:deps {org.clojure/data.csv {:mvn/version "1.0.0"}
+        org.clojure/math.combinatorics {:mvn/version "0.1.6"}}}
