@@ -488,10 +488,18 @@
                                 [(explain-defender general-scenario)]
                                 [(explain-attacker general-scenario)]
                                 [(explain-replacement-strategy general-scenario)]
-                                (mapcat (fn [simulation]
-                                          [(get-in simulation (concat scope [:hits-taken]))
-                                           (get-in simulation (concat scope [:hits-dealt]))])
-                                        simulations))
+                                (map (fn [simulation]
+                                       (get-in simulation (concat scope [:hits-taken])))
+                                     simulations)
+                                (map (fn [simulation]
+                                       (get-in simulation (concat scope [:hits-dealt])))
+                                     simulations)
+                                (map (fn [simulation]
+                                       (firepower-explained (get-in simulation [:1st :defender])))
+                                     simulations)
+                                (map (fn [simulation]
+                                       (firepower-explained (get-in simulation [:1st :attacker])))
+                                     simulations))
                         {:general-scenario general-scenario})))
       (sort-by
         (juxt
@@ -573,5 +581,15 @@
                              "Replacement strategy"
                              "Hits taken (SF)" "Hits dealt (SF)"
                              "Hits taken (DF)" "Hits dealt (DF)"
-                             "Hits taken (TF)" "Hits dealt (TF)"]]
+                             "Hits taken (TF)" "Hits dealt (TF)"
+                             "Defender result (SF)" "Attacker result (SF)"
+                             "Defender result (DF)" "Attacker result (DF)"
+                             "Defender result (TF)" "Attacker result (TF)"]]
                            (to-csv simulations scope)))))
+
+(comment
+  (do
+    (to-csv! simulations :regular :v1)
+    (to-csv! simulations :blitz :v1)
+    (to-csv! simulations-v2 :regular :v2)
+    (to-csv! simulations-v2 :blitz :v2)))
