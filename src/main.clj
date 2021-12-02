@@ -353,9 +353,37 @@
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
 
-#_(def scenarios-2+1
+(def scenarios-2+1
   (for [airstrike airstrikes
-        [attacker reinforcement replacement-strategy] attackers
+        [attacker reinforcement replacement-strategy]
+        (concat (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2))
         defender defenders
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
@@ -796,6 +824,8 @@
     (to-csv! scenarios-4-no-reinforcement :blitz :4)
     (to-csv! scenarios-1 :regular :1)
     (to-csv! scenarios-1 :blitz :1)
+    (to-csv! scenarios-2+1 :regular :2+1)
+    (to-csv! scenarios-2+1 :blitz :2+1)
     (to-csv! scenarios-2+2 :regular :2+2)
     (to-csv! scenarios-2+2 :blitz :2+2)
     (to-csv! scenarios-1+2 :regular :1+2)
