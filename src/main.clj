@@ -2529,7 +2529,7 @@
                               scenarios-4+2
                               scenarios-4+3
                               scenarios-4+4)]
-      #_(to-csv! *scenarios* :regular :all)
+      (to-csv! *scenarios* :regular :all)
       (to-csv! *scenarios* :blitz :all)))
   (do
     (to-csv! scenarios-1 :regular :1)
