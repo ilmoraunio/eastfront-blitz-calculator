@@ -296,6 +296,35 @@
                 (gen-attackers [{:p 2/6 :cv 4 :hits 0}
                                 {:p 2/6 :cv 4 :hits 0}
                                 {:p 3/6 :cv 4 :hits 0}]
+                               1)
+                ;; soviets
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 3/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 3/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 3/6 :cv 3 :hits 0}]
                                1))
         defender defenders
         hits-required hits-required-for-full-step]
@@ -348,6 +377,32 @@
                                 {:p 1/6 :cv 4 :hits 0}
                                 {:p 1/6 :cv 4 :hits 0}
                                 {:p 3/6 :cv 4 :hits 0}]
+                               1)
+                ;; soviets
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               1)
+                (gen-attackers [{:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
                                1))
         defender defenders
         hits-required hits-required-for-full-step]
@@ -383,6 +438,23 @@
                 (gen-attackers [{:p 1/6 :cv 4 :hits 0}
                                 {:p 1/6 :cv 4 :hits 0}
                                 {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                ;; soviets
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
                                2))
         defender defenders
         hits-required hits-required-for-full-step]
