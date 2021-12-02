@@ -418,6 +418,38 @@
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
 
+(def scenarios-2
+  (for [airstrike airstrikes
+        [attacker reinforcement replacement-strategy]
+        (concat (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                ;; soviets
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2))
+        defender defenders
+        hits-required hits-required-for-full-step]
+    [airstrike attacker defender hits-required reinforcement replacement-strategy]))
+
 (def scenarios-2+1
   (for [airstrike airstrikes
         [attacker reinforcement replacement-strategy]
@@ -802,6 +834,58 @@
                                 {:p 2/6 :cv 3 :hits 0}
                                 {:p 2/6 :cv 3 :hits 0}]
                                2))
+        defender defenders
+        hits-required hits-required-for-full-step]
+    [airstrike attacker defender hits-required reinforcement replacement-strategy]))
+
+(def scenarios-3
+  (for [airstrike airstrikes
+        [attacker reinforcement replacement-strategy]
+        (concat (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}]
+                               3)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               3)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               3)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               3)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               3)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               3)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               3)
+                ;; soviets
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}]
+                               3)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               3)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               3)
+                (gen-attackers [{:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               3))
         defender defenders
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
@@ -1335,7 +1419,7 @@
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
 
-(def scenarios-4-no-reinforcement
+(def scenarios-4
   (for [airstrike airstrikes
         attacker attackers
         defender defenders
@@ -2115,6 +2199,10 @@
       :debug hits
       (throw (ex-info "invalid strategy" {})))))
 
+(defn block-count
+  [pool]
+  (count pool))
+
 (defn cv-steps
   [pool]
   (->> (dices-thrown pool)
@@ -2162,8 +2250,8 @@
     ;; 2nd battle turn
     (let [airstrike-2nd-start (reset-hits airstrike-1st-reduced)
           attacker-2nd-start (cond-> (reset-hits attacker-1st)
-                               reinforcement (reinforce-pool reinforcement
-                                                             replacement-strategy))
+                               (not-empty reinforcement) (reinforce-pool reinforcement
+                                                                         replacement-strategy))
           defender-2nd-start (reset-hits defender-1st-final)
           airstrike-2nd-hits (dice-roll airstrike-2nd-start :ceil)
           defender-2nd (subtract defender-2nd-start airstrike-2nd-hits hits-required-for-full-step)
@@ -2224,7 +2312,7 @@
   [[airstrike attacker defender hits-required reinforcement :as scenario]]
   (format "%s %s"
           (cond-> (firepower-explained attacker)
-            reinforcement (str " + " (firepower-explained reinforcement)))
+            (not-empty reinforcement) (str " + " (firepower-explained reinforcement)))
           (case (-> airstrike first :cv)
             1 "I"
             2 "II"
@@ -2257,6 +2345,18 @@
     :highest-p "Armor first"
     ""))
 
+(defn count-initial-attacker-blocks
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
+  (count attacker))
+
+(defn count-initial-defender-blocks
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
+  (count defender))
+
+(defn count-initial-reinforcements-blocks
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
+  (count reinforcements))
+
 (defn to-csv
   [scenarios hq-activation]
   (assert (#{:regular :blitz} hq-activation))
@@ -2284,6 +2384,15 @@
                                 [(explain-defender general-scenario)]
                                 [(explain-attacker general-scenario)]
                                 [(explain-replacement-strategy general-scenario)]
+                                [(count-initial-defender-blocks general-scenario)]
+                                (map (fn [simulation]
+                                       (block-count (get-in simulation [result-scope :defender])))
+                                     simulations)
+                                [(count-initial-attacker-blocks general-scenario)]
+                                [(count-initial-reinforcements-blocks general-scenario)]
+                                (map (fn [simulation]
+                                       (block-count (get-in simulation [result-scope :attacker])))
+                                     simulations)
                                 (map (fn [simulation]
                                        (get-in simulation (concat scope [:hits-taken])))
                                      simulations)
@@ -2375,6 +2484,15 @@
                              "Defender"
                              "Attacker"
                              "Replacement strategy"
+                             "Defender block count (1st)"
+                             "Defender block count (result) SF"
+                             "Defender block count (result) DF"
+                             "Defender block count (result) TF"
+                             "Attacker block count (1st)"
+                             "Attacker block count (reinforcements)"
+                             "Attacker block count (result) SF"
+                             "Attacker block count (result) DF"
+                             "Attacker block count (result) TF"
                              "Hits taken (SF)"
                              "Hits taken (DF)"
                              "Hits taken (TF)"
@@ -2389,12 +2507,31 @@
                              "Attacker result (TF)"]]
                            (to-csv scenarios scope)))))
 
-;; TODO: combine all scenarios together
-
 (comment
   (do
-    (to-csv! scenarios-4-no-reinforcement :regular :4)
-    (to-csv! scenarios-4-no-reinforcement :blitz :4)
+    (let [*scenarios* (concat scenarios-1
+                              scenarios-1+1
+                              scenarios-1+2
+                              scenarios-1+3
+                              scenarios-1+4
+                              scenarios-2
+                              scenarios-2+1
+                              scenarios-2+2
+                              scenarios-2+3
+                              scenarios-2+4
+                              scenarios-3
+                              scenarios-3+1
+                              scenarios-3+2
+                              scenarios-3+3
+                              scenarios-3+4
+                              scenarios-4
+                              scenarios-4+1
+                              scenarios-4+2
+                              scenarios-4+3
+                              scenarios-4+4)]
+      #_(to-csv! *scenarios* :regular :all)
+      (to-csv! *scenarios* :blitz :all)))
+  (do
     (to-csv! scenarios-1 :regular :1)
     (to-csv! scenarios-1 :blitz :1)
     (to-csv! scenarios-1+1 :regular :1+1)
@@ -2405,6 +2542,8 @@
     (to-csv! scenarios-1+3 :blitz :1+3)
     (to-csv! scenarios-1+4 :regular :1+4)
     (to-csv! scenarios-1+4 :blitz :1+4)
+    (to-csv! scenarios-2 :regular :2)
+    (to-csv! scenarios-2 :blitz :2)
     (to-csv! scenarios-2+1 :regular :2+1)
     (to-csv! scenarios-2+1 :blitz :2+1)
     (to-csv! scenarios-2+2 :regular :2+2)
@@ -2413,6 +2552,8 @@
     (to-csv! scenarios-2+3 :blitz :2+3)
     (to-csv! scenarios-2+4 :regular :2+4)
     (to-csv! scenarios-2+4 :blitz :2+4)
+    (to-csv! scenarios-3 :regular :3)
+    (to-csv! scenarios-3 :blitz :3)
     (to-csv! scenarios-3+1 :regular :3+1)
     (to-csv! scenarios-3+1 :blitz :3+1)
     (to-csv! scenarios-3+2 :regular :3+2)
@@ -2421,6 +2562,8 @@
     (to-csv! scenarios-3+3 :blitz :3+3)
     (to-csv! scenarios-3+4 :regular :3+4)
     (to-csv! scenarios-3+4 :blitz :3+4)
+    (to-csv! scenarios-4 :regular :4)
+    (to-csv! scenarios-4 :blitz :4)
     (to-csv! scenarios-4+1 :regular :4+1)
     (to-csv! scenarios-4+1 :blitz :4+1)
     (to-csv! scenarios-4+2 :regular :4+2)
