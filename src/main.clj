@@ -516,9 +516,19 @@
       :debug hits
       (throw (ex-info "invalid strategy" {})))))
 
+(defn cv-steps
+  [pool]
+  (->> (dices-thrown pool)
+    vals
+    (apply +)))
+
 (defn calc-hits
-  [n hits-required]
-  (Math/floor (/ n hits-required)))
+  ([pool n hits-required]
+   (min
+     (cv-steps pool)
+     (calc-hits n hits-required)))
+  ([n hits-required]
+   (Math/floor (/ n hits-required))))
 
 (defn simulate
   "Simulates a given scenario given as a triplet of maps containing pool of
@@ -562,7 +572,17 @@
           attacker-2nd (subtract attacker-2nd-start defender-2nd-hits 1)
           attacker-2nd-hits (dice-roll attacker-2nd :ceil)
           defender-2nd-final (subtract defender-2nd attacker-2nd-hits hits-required-for-full-step)
-          airstrike-2nd-reduced (subtract airstrike-1st-reduced 1 1)]
+          airstrike-2nd-reduced (subtract airstrike-1st-reduced 1 1)
+          hits-dealt-1st-agg (calc-hits attacker-start defender-1st-hits 1)
+          hits-taken-1st-agg (calc-hits defender-start
+                                        (+ airstrike-1st-hits
+                                           attacker-1st-hits)
+                                        hits-req)
+          hits-dealt-2nd-agg (calc-hits attacker-2nd-start defender-2nd-hits 1)
+          hits-taken-2nd-agg (calc-hits defender-2nd-start
+                                        (+ airstrike-2nd-hits
+                                           attacker-2nd-hits)
+                                        hits-req)]
       #_(prn ::2nd-battle-turn [airstrike-2nd-reduced attacker-2nd defender-2nd-final])
       {:scenario scenario
        :1st {:airstrike airstrike-1st-reduced
@@ -571,26 +591,18 @@
              :hits {:airstrike airstrike-1st-hits
                     :attacker attacker-1st-hits
                     :defender defender-1st-hits}
-             :agg {:hits-dealt (calc-hits defender-1st-hits 1)
-                   :hits-taken (calc-hits (+ airstrike-1st-hits
-                                             attacker-1st-hits)
-                                          hits-req)}}
+             :agg {:hits-dealt hits-dealt-1st-agg
+                   :hits-taken hits-taken-1st-agg}}
        :2nd {:airstrike airstrike-2nd-reduced
              :attacker attacker-2nd
              :defender defender-2nd-final
              :hits {:airstrike airstrike-2nd-hits
                     :attacker attacker-2nd-hits
                     :defender defender-2nd-hits}
-             :agg {:hits-dealt (calc-hits defender-2nd-hits 1)
-                   :hits-taken (calc-hits (+ airstrike-2nd-hits
-                                             attacker-2nd-hits)
-                                          hits-req)}}
-       :agg {:hits-dealt (calc-hits (+ defender-1st-hits defender-2nd-hits) 1)
-             :hits-taken (calc-hits (+ airstrike-1st-hits
-                                       airstrike-2nd-hits
-                                       attacker-1st-hits
-                                       attacker-2nd-hits)
-                                    hits-req)}})))
+             :agg {:hits-dealt hits-dealt-2nd-agg
+                   :hits-taken hits-taken-2nd-agg}}
+       :agg {:hits-dealt (+ hits-dealt-1st-agg hits-dealt-2nd-agg)
+             :hits-taken (+ hits-taken-1st-agg hits-taken-2nd-agg)}})))
 
 (defn wrap-simulation
   [scenarios]
