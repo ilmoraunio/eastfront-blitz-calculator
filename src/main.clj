@@ -124,12 +124,12 @@
 (def scenarios-1
   (for [airstrike airstrikes
         [attacker reinforcement replacement-strategy]
-        (concat (gen-attackers [{:p 1/6 :cv 4 :hits 0}] 1 nil)
-                (gen-attackers [{:p 2/6 :cv 4 :hits 0}] 1 nil)
-                (gen-attackers [{:p 3/6 :cv 4 :hits 0}] 1 nil)
-                (gen-attackers [{:p 1/6 :cv 3 :hits 0}] 1 nil)
-                (gen-attackers [{:p 2/6 :cv 3 :hits 0}] 1 nil)
-                (gen-attackers [{:p 3/6 :cv 3 :hits 0}] 1 nil))
+        (concat (gen-attackers [{:p 1/6 :cv 4 :hits 0}] 1)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}] 1)
+                (gen-attackers [{:p 3/6 :cv 4 :hits 0}] 1)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}] 1)
+                (gen-attackers [{:p 2/6 :cv 3 :hits 0}] 1)
+                (gen-attackers [{:p 3/6 :cv 3 :hits 0}] 1))
         defender defenders
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
