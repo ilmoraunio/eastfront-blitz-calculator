@@ -570,9 +570,150 @@
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
 
-#_(def scenarios-2+4
+(def scenarios-2+4
   (for [airstrike airstrikes
-        [attacker reinforcement replacement-strategy] attackers
+        [attacker reinforcement replacement-strategy]
+        (concat (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 2/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 1/6 :cv 4 :hits 0}
+                                {:p 3/6 :cv 4 :hits 0}]
+                               2)
+                ;; soviets
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 1/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2)
+                (gen-attackers [{:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}
+                                {:p 2/6 :cv 3 :hits 0}]
+                               2))
         defender defenders
         hits-required hits-required-for-full-step]
     [airstrike attacker defender hits-required reinforcement replacement-strategy]))
@@ -1005,6 +1146,8 @@
     (to-csv! scenarios-2+2 :blitz :2+2)
     (to-csv! scenarios-2+3 :regular :2+3)
     (to-csv! scenarios-2+3 :blitz :2+3)
+    (to-csv! scenarios-2+4 :regular :2+4)
+    (to-csv! scenarios-2+4 :blitz :2+4)
     (to-csv! scenarios-1+2 :regular :1+2)
     (to-csv! scenarios-1+2 :blitz :1+2)
     (to-csv! scenarios-1+3 :regular :1+3)
