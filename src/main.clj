@@ -14,7 +14,15 @@
   ([pool starting-force-n]
    (mapcat (fn [strategy]
              (gen-attackers pool starting-force-n strategy))
-           [:lowest-p :highest-p]))
+           ;; XXX(ilmoraunio): While it is be important from a proper
+           ;;                  analysis point-of-view to know how dropping armor
+           ;;                  first will affect the battle results, I feel this
+           ;;                  ought to be represented in the same row with the
+           ;;                  infantry-first strategy. This makes it easy to
+           ;;                  contrast when looking at a particular battle
+           ;;                  scenario. Will punt on implementing this for now
+           ;;                  due to time constraints.
+           [:lowest-p #_:highest-p]))
   ([pool starting-force-n replacement-strategy]
    (->> (combo/permutations pool)
      (map (juxt (partial take starting-force-n)
@@ -2338,13 +2346,6 @@
                                              :scenario scenario})))
           (firepower-explained defender)))
 
-(defn explain-replacement-strategy
-  [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
-  (case replacement-strategy
-    :lowest-p "Infantry first"
-    :highest-p "Armor first"
-    ""))
-
 (defn count-initial-attacker-blocks
   [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
   (count attacker))
@@ -2383,7 +2384,6 @@
              (with-meta (concat [(explain general-scenario)]
                                 [(explain-defender general-scenario)]
                                 [(explain-attacker general-scenario)]
-                                [(explain-replacement-strategy general-scenario)]
                                 [(count-initial-defender-blocks general-scenario)]
                                 (map (fn [simulation]
                                        (block-count (get-in simulation [result-scope :defender])))
@@ -2409,6 +2409,7 @@
       (sort-by
         (juxt
           ;; armor-dropped first strategy grouped at the bottom
+          ;; XXX(ilmoraunio): Now temporarily redundant.
           (fn [entry]
             (let [[_airstrike-strength attacker defender hits reinforcement replacement-strategy
                    :as general-scenario] (-> entry meta :general-scenario)]
@@ -2483,7 +2484,6 @@
                    (concat [["Scenario"
                              "Defender"
                              "Attacker"
-                             "Replacement strategy"
                              "Defender block count (1st)"
                              "Defender block count (result) SF"
                              "Defender block count (result) DF"
