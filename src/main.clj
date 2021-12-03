@@ -2208,8 +2208,10 @@
       (throw (ex-info "invalid strategy" {})))))
 
 (defn block-count
-  [pool]
-  (count pool))
+  ([pool]
+   (count pool))
+  ([pool p]
+   (count (filter #(-> % :p (= p)) pool))))
 
 (defn cv-steps
   [pool]
@@ -2337,6 +2339,15 @@
           (firepower-explained defender)
           (explain-attacker scenario)))
 
+(defn explain-defense
+  [[airstrike attacker defender hits-required reinforcement :as scenario]]
+  (case hits-required
+    1 "Normal"
+    2 "Double defense"
+    3 "Triple defense"
+    (throw (ex-info "invalid value" {:hits-required hits-required
+                                     :scenario scenario}))))
+
 (defn explain-defender
   [[airstrike attacker defender hits-required :as scenario]]
   (format (case hits-required
@@ -2350,13 +2361,41 @@
   [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
   (count attacker))
 
+(defn count-initial-attacker-steps
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
+  (cv-steps attacker))
+
 (defn count-initial-defender-blocks
   [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
   (count defender))
 
+(defn count-initial-defender-steps
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
+  (cv-steps defender))
+
 (defn count-initial-reinforcements-blocks
   [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
   (count reinforcements))
+
+(defn count-initial-reinforcements-steps
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy]]
+  (cv-steps reinforcements))
+
+(defn count-initial-defender-blocks-by-p
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy] p]
+  (block-count defender p))
+
+(defn count-initial-attacker-blocks-by-p
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy] p]
+  (block-count attacker p))
+
+(defn count-initial-defender-steps-by-p
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy] p]
+  ((dices-thrown defender) p 0))
+
+(defn count-initial-attacker-steps-by-p
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy] p]
+  ((dices-thrown attacker) p 0))
 
 (defn to-csv
   [scenarios hq-activation]
@@ -2382,28 +2421,61 @@
       (sort-by #(get-in % [:scenario #_"based on strength of airstrike" 0 0 :p]))
       (map (fn [[general-scenario simulations]]
              (with-meta (concat [(explain general-scenario)]
+                                [(explain-defense general-scenario)]
                                 [(explain-defender general-scenario)]
                                 [(explain-attacker general-scenario)]
-                                [(count-initial-defender-blocks general-scenario)]
-                                (map (fn [simulation]
-                                       (block-count (get-in simulation [result-scope :defender])))
-                                     simulations)
-                                [(count-initial-attacker-blocks general-scenario)]
-                                [(count-initial-reinforcements-blocks general-scenario)]
-                                (map (fn [simulation]
-                                       (block-count (get-in simulation [result-scope :attacker])))
-                                     simulations)
-                                (map (fn [simulation]
-                                       (get-in simulation (concat scope [:hits-taken])))
-                                     simulations)
-                                (map (fn [simulation]
-                                       (get-in simulation (concat scope [:hits-dealt])))
-                                     simulations)
+
                                 (map (fn [simulation]
                                        (firepower-explained (get-in simulation [result-scope :defender])))
                                      simulations)
                                 (map (fn [simulation]
                                        (firepower-explained (get-in simulation [result-scope :attacker])))
+                                     simulations)
+
+                                [(count-initial-defender-blocks general-scenario)]
+                                [(count-initial-defender-steps general-scenario)]
+
+                                (map (fn [simulation]
+                                       (block-count (get-in simulation [result-scope :defender])))
+                                     simulations)
+                                (map (fn [simulation]
+                                       (cv-steps (get-in simulation [result-scope :defender])))
+                                     simulations)
+
+                                [(count-initial-attacker-blocks general-scenario)]
+                                [(count-initial-attacker-steps general-scenario)]
+
+                                [(count-initial-reinforcements-blocks general-scenario)]
+                                [(count-initial-reinforcements-steps general-scenario)]
+
+                                (map (fn [simulation]
+                                       (block-count (get-in simulation [result-scope :attacker])))
+                                     simulations)
+                                (map (fn [simulation]
+                                       (cv-steps (get-in simulation [result-scope :attacker])))
+                                     simulations)
+
+                                [(count-initial-defender-blocks-by-p general-scenario 1/6)]
+                                [(count-initial-defender-blocks-by-p general-scenario 2/6)]
+                                [(count-initial-defender-blocks-by-p general-scenario 3/6)]
+
+                                [(count-initial-defender-steps-by-p general-scenario 1/6)]
+                                [(count-initial-defender-steps-by-p general-scenario 2/6)]
+                                [(count-initial-defender-steps-by-p general-scenario 3/6)]
+
+                                [(count-initial-attacker-blocks-by-p general-scenario 1/6)]
+                                [(count-initial-attacker-blocks-by-p general-scenario 2/6)]
+                                [(count-initial-attacker-blocks-by-p general-scenario 3/6)]
+
+                                [(count-initial-attacker-steps-by-p general-scenario 1/6)]
+                                [(count-initial-attacker-steps-by-p general-scenario 2/6)]
+                                [(count-initial-attacker-steps-by-p general-scenario 3/6)]
+
+                                (map (fn [simulation]
+                                       (get-in simulation (concat scope [:hits-taken])))
+                                     simulations)
+                                (map (fn [simulation]
+                                       (get-in simulation (concat scope [:hits-dealt])))
                                      simulations))
                         {:general-scenario general-scenario})))
       (sort-by
@@ -2482,29 +2554,62 @@
                                         (name label)))]
     (csv/write-csv writer
                    (concat [["Scenario"
+                             "Defense rate"
                              "Defender"
                              "Attacker"
-                             "Defender block count (1st)"
-                             "Defender block count (result) SF"
-                             "Defender block count (result) DF"
-                             "Defender block count (result) TF"
-                             "Attacker block count (1st)"
-                             "Attacker block count (reinforcements)"
-                             "Attacker block count (result) SF"
-                             "Attacker block count (result) DF"
-                             "Attacker block count (result) TF"
-                             "Hits taken (SF)"
-                             "Hits taken (DF)"
-                             "Hits taken (TF)"
-                             "Hits dealt (SF)"
-                             "Hits dealt (DF)"
-                             "Hits dealt (TF)"
+
                              "Defender result (SF)"
                              "Defender result (DF)"
                              "Defender result (TF)"
+
                              "Attacker result (SF)"
                              "Attacker result (DF)"
-                             "Attacker result (TF)"]]
+                             "Attacker result (TF)"
+
+                             "Defender block count"
+                             "Defender steps count"
+
+                             "Defender block count (result) SF"
+                             "Defender block count (result) DF"
+                             "Defender block count (result) TF"
+                             "Defender steps count (result) SF"
+                             "Defender steps count (result) DF"
+                             "Defender steps count (result) TF"
+
+                             "Attacker block count"
+                             "Attacker steps count"
+
+                             "Attacker block count (reinforcements)"
+                             "Attacker steps count (reinforcements)"
+
+                             "Attacker block count (result) SF"
+                             "Attacker block count (result) DF"
+                             "Attacker block count (result) TF"
+                             "Attacker steps count (result) SF"
+                             "Attacker steps count (result) DF"
+                             "Attacker steps count (result) TF"
+
+                             "Defender SF block count"
+                             "Defender DF block count"
+                             "Defender TF block count"
+                             "Defender SF steps count"
+                             "Defender DF steps count"
+                             "Defender TF steps count"
+
+                             "Attacker SF block count"
+                             "Attacker DF block count"
+                             "Attacker TF block count"
+                             "Attacker SF steps count"
+                             "Attacker DF steps count"
+                             "Attacker TF steps count"
+
+                             "Hits taken (SF)"
+                             "Hits taken (DF)"
+                             "Hits taken (TF)"
+
+                             "Hits dealt (SF)"
+                             "Hits dealt (DF)"
+                             "Hits dealt (TF)"]]
                            (to-csv scenarios scope)))))
 
 (comment
