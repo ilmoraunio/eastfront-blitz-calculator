@@ -2397,6 +2397,14 @@
   [[airstrike attacker defender hits-required reinforcements replacement-strategy] p]
   ((dices-thrown attacker) p 0))
 
+(defn count-initial-reinforcements-blocks-by-p
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy] p]
+  (block-count reinforcements p))
+
+(defn count-initial-reinforcements-steps-by-p
+  [[airstrike attacker defender hits-required reinforcements replacement-strategy] p]
+  ((dices-thrown reinforcements) p 0))
+
 (defn to-csv
   [scenarios hq-activation]
   (assert (#{:regular :blitz} hq-activation))
@@ -2470,6 +2478,14 @@
                                 [(count-initial-attacker-steps-by-p general-scenario 1/6)]
                                 [(count-initial-attacker-steps-by-p general-scenario 2/6)]
                                 [(count-initial-attacker-steps-by-p general-scenario 3/6)]
+
+                                [(count-initial-reinforcements-blocks-by-p general-scenario 1/6)]
+                                [(count-initial-reinforcements-blocks-by-p general-scenario 2/6)]
+                                [(count-initial-reinforcements-blocks-by-p general-scenario 3/6)]
+
+                                [(count-initial-reinforcements-steps-by-p general-scenario 1/6)]
+                                [(count-initial-reinforcements-steps-by-p general-scenario 2/6)]
+                                [(count-initial-reinforcements-steps-by-p general-scenario 3/6)]
 
                                 (map (fn [simulation]
                                        (get-in simulation (concat scope [:hits-taken])))
@@ -2602,6 +2618,13 @@
                              "Attacker SF steps count"
                              "Attacker DF steps count"
                              "Attacker TF steps count"
+
+                             "Reinforcements SF block count"
+                             "Reinforcements DF block count"
+                             "Reinforcements TF block count"
+                             "Reinforcements SF steps count"
+                             "Reinforcements DF steps count"
+                             "Reinforcements TF steps count"
 
                              "Hits taken (SF)"
                              "Hits taken (DF)"
