@@ -2589,7 +2589,7 @@
                              "Defense rate"
                              "Defender"
                              "Attacker"
-                             "Airstrike steps"
+                             "Airstrike CVs"
 
                              "Blocks defender"
                              "CVs defender"
