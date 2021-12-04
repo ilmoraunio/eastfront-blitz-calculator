@@ -2444,35 +2444,14 @@
                                 [(explain-attacker general-scenario)]
                                 [(airstrike-steps general-scenario)]
 
-                                (map (fn [simulation]
-                                       (firepower-explained (get-in simulation [result-scope :defender])))
-                                     simulations)
-                                (map (fn [simulation]
-                                       (firepower-explained (get-in simulation [result-scope :attacker])))
-                                     simulations)
-
                                 [(count-initial-defender-blocks general-scenario)]
                                 [(count-initial-defender-steps general-scenario)]
-
-                                (map (fn [simulation]
-                                       (block-count (get-in simulation [result-scope :defender])))
-                                     simulations)
-                                (map (fn [simulation]
-                                       (cv-steps (get-in simulation [result-scope :defender])))
-                                     simulations)
 
                                 [(count-initial-attacker-blocks general-scenario)]
                                 [(count-initial-attacker-steps general-scenario)]
 
                                 [(count-initial-reinforcements-blocks general-scenario)]
                                 [(count-initial-reinforcements-steps general-scenario)]
-
-                                (map (fn [simulation]
-                                       (block-count (get-in simulation [result-scope :attacker])))
-                                     simulations)
-                                (map (fn [simulation]
-                                       (cv-steps (get-in simulation [result-scope :attacker])))
-                                     simulations)
 
                                 [(count-initial-defender-blocks-by-p general-scenario 1/6)]
                                 [(count-initial-defender-blocks-by-p general-scenario 2/6)]
@@ -2497,6 +2476,27 @@
                                 [(count-initial-reinforcements-steps-by-p general-scenario 1/6)]
                                 [(count-initial-reinforcements-steps-by-p general-scenario 2/6)]
                                 [(count-initial-reinforcements-steps-by-p general-scenario 3/6)]
+
+                                (map (fn [simulation]
+                                       (firepower-explained (get-in simulation [result-scope :defender])))
+                                     simulations)
+                                (map (fn [simulation]
+                                       (firepower-explained (get-in simulation [result-scope :attacker])))
+                                     simulations)
+
+                                (map (fn [simulation]
+                                       (block-count (get-in simulation [result-scope :defender])))
+                                     simulations)
+                                (map (fn [simulation]
+                                       (cv-steps (get-in simulation [result-scope :defender])))
+                                     simulations)
+
+                                (map (fn [simulation]
+                                       (block-count (get-in simulation [result-scope :attacker])))
+                                     simulations)
+                                (map (fn [simulation]
+                                       (cv-steps (get-in simulation [result-scope :attacker])))
+                                     simulations)
 
                                 (map (fn [simulation]
                                        (get-in simulation (concat scope [:hits-taken])))
@@ -2591,36 +2591,14 @@
                              "Attacker"
                              "Airstrike steps"
 
-                             "Result defender (SF)"
-                             "Result defender (DF)"
-                             "Result defender (TF)"
-
-                             "Result attacker (SF)"
-                             "Result attacker (DF)"
-                             "Result attacker (TF)"
-
                              "Blocks defender"
                              "CVs defender"
-
-                             "Result blocks defender (SF)"
-                             "Result blocks defender (DF)"
-                             "Result blocks defender (TF)"
-                             "Result CVs defender (SF)"
-                             "Result CVs defender (DF)"
-                             "Result CVs defender (TF)"
 
                              "Blocks attacker"
                              "CVs attacker"
 
                              "Blocks reinforcements"
                              "CVs reinforcements"
-
-                             "Result blocks attacker (SF)"
-                             "Result blocks attacker (DF)"
-                             "Result blocks attacker (TF)"
-                             "Result CVs attacker (SF)"
-                             "Result CVs attacker (DF)"
-                             "Result CVs attacker (TF)"
 
                              "SF blocks defender"
                              "DF blocks defender"
@@ -2642,6 +2620,28 @@
                              "SF CVs reinforcements"
                              "DF CVs reinforcements"
                              "TF CVs reinforcements"
+
+                             "Result defender (SF)"
+                             "Result defender (DF)"
+                             "Result defender (TF)"
+
+                             "Result attacker (SF)"
+                             "Result attacker (DF)"
+                             "Result attacker (TF)"
+
+                             "Result blocks defender (SF)"
+                             "Result blocks defender (DF)"
+                             "Result blocks defender (TF)"
+                             "Result CVs defender (SF)"
+                             "Result CVs defender (DF)"
+                             "Result CVs defender (TF)"
+
+                             "Result blocks attacker (SF)"
+                             "Result blocks attacker (DF)"
+                             "Result blocks attacker (TF)"
+                             "Result CVs attacker (SF)"
+                             "Result CVs attacker (DF)"
+                             "Result CVs attacker (TF)"
 
                              "Hits taken (SF)"
                              "Hits taken (DF)"
