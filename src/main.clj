@@ -2329,6 +2329,10 @@
             3 "III"
             (throw (ex-info "invalid value" {:airstrike airstrike})))))
 
+(defn airstrike-steps
+  [[airstrike attacker defender hits-required reinforcement :as scenario]]
+  (cv-steps airstrike))
+
 (defn explain
   [[airstrike attacker defender hits-required reinforcement :as scenario]]
   (format (case hits-required
@@ -2432,6 +2436,7 @@
                                 [(explain-defense general-scenario)]
                                 [(explain-defender general-scenario)]
                                 [(explain-attacker general-scenario)]
+                                [(airstrike-steps general-scenario)]
 
                                 (map (fn [simulation]
                                        (firepower-explained (get-in simulation [result-scope :defender])))
@@ -2573,6 +2578,7 @@
                              "Defense rate"
                              "Defender"
                              "Attacker"
+                             "Airstrike steps"
 
                              "Defender result (SF)"
                              "Defender result (DF)"
