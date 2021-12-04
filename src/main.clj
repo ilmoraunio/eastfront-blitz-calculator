@@ -32,8 +32,11 @@
      (distinct)
      (map (fn [[a b]] [a b replacement-strategy])))))
 
-(def airstrikes [[{:p 1/6 :cv 3 :hits 0}]
+(def airstrikes [[{:p 1/6 :cv 2 :hits 0}]
+                 [{:p 1/6 :cv 3 :hits 0}]
+                 [{:p 2/6 :cv 2 :hits 0}]
                  [{:p 2/6 :cv 3 :hits 0}]
+                 [{:p 3/6 :cv 2 :hits 0}]
                  [{:p 3/6 :cv 3 :hits 0}]])
 
 (def attackers [;; 4 triple-fire (tf) + 12 double-fire (df) (axis only)
@@ -121,7 +124,8 @@
             2/6 {:cv 4 :n 2}
             1/6 {:cv 4 :n 1}})]))
 
-(def hits-required-for-full-step [1 2])
+;; XXX(ilmoraunio): Disabled to bring down the file size.
+(def hits-required-for-full-step [1 2 #_3])
 
 (def replacement-strategies
   {:lowest-p (juxt (comp + :p) (comp + :cv))
@@ -2336,6 +2340,7 @@
 (defn explain
   [[airstrike attacker defender hits-required reinforcement :as scenario]]
   (format (case hits-required
+            3 "%s (triple defense) vs %s"
             2 "%s (double defense) vs %s"
             1 "%s vs %s"
             (throw (ex-info "invalid value" {:hits-required hits-required
@@ -2355,6 +2360,7 @@
 (defn explain-defender
   [[airstrike attacker defender hits-required :as scenario]]
   (format (case hits-required
+            3 "%s (triple defense)"
             2 "%s (double defense)"
             1 "%s"
             (throw (ex-info "invalid value" {:hits-required hits-required
@@ -2515,8 +2521,9 @@
             (let [[_airstrike-strength attacker defender hits
                    :as general-scenario] (-> entry meta :general-scenario)]
               (case hits
-                2 1
-                1 2
+                3 1
+                2 2
+                1 3
                 (throw (ex-info "unknown value" hits)))))
           ;; sum of defender TF cvs
           (fn [entry]
@@ -2562,7 +2569,11 @@
           (fn [entry]
             (let [[_airstrike-strength attacker defender hits reinforcement
                    :as general-scenario] (-> entry meta :general-scenario)]
-              (apply + (map second (dices-thrown reinforcement))))))
+              (apply + (map second (dices-thrown reinforcement)))))
+          (fn [entry]
+            (let [[airstrike-strength attacker defender hits reinforcement
+                   :as general-scenario] (-> entry meta :general-scenario)]
+              (cv-steps airstrike-strength))))
         #(compare %2 %1))
       (distinct)
       ;; soviets don't have TF
