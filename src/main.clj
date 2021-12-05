@@ -2249,15 +2249,31 @@
     hits-required-for-full-step
     reinforcement
     replacement-strategy
-    :as scenario]]
+    :as scenario]
+   {:keys [favor] :as opts}]
   #_(prn ::scenario scenario)
   ;; 1st battle turn
   (let [hits-req hits-required-for-full-step
-        airstrike-1st-hits (dice-roll airstrike-start :ceil)
+        airstrike-1st-hits (dice-roll airstrike-start (case favor
+                                                        :offense :ceil
+                                                        :defense :floor
+                                                        :neutral :floor
+                                                        (throw (ex-info "invalid value" {:favor favor
+                                                                                         :opts opts}))))
         defender-1st (subtract defender-start airstrike-1st-hits hits-required-for-full-step)
-        defender-1st-hits (dice-roll defender-1st :floor)
+        defender-1st-hits (dice-roll defender-1st (case favor
+                                                    :offense :floor
+                                                    :defense :ceil
+                                                    :neutral :floor
+                                                    (throw (ex-info "invalid value" {:favor favor
+                                                                                     :opts opts}))))
         attacker-1st (subtract attacker-start defender-1st-hits 1)
-        attacker-1st-hits (dice-roll attacker-1st :ceil)
+        attacker-1st-hits (dice-roll attacker-1st (case favor
+                                                        :offense :ceil
+                                                        :defense :floor
+                                                        :neutral :floor
+                                                        (throw (ex-info "invalid value" {:favor favor
+                                                                                         :opts opts}))))
         defender-1st-final (subtract defender-1st attacker-1st-hits hits-required-for-full-step)
         airstrike-1st-reduced (subtract airstrike-start 1 1)]
     #_(prn ::1st-battle-turn [airstrike-1st-reduced attacker-1st defender-1st-final])
@@ -2267,11 +2283,26 @@
                                (not-empty reinforcement) (reinforce-pool reinforcement
                                                                          replacement-strategy))
           defender-2nd-start (reset-hits defender-1st-final)
-          airstrike-2nd-hits (dice-roll airstrike-2nd-start :ceil)
+          airstrike-2nd-hits (dice-roll airstrike-2nd-start (case favor
+                                                        :offense :ceil
+                                                        :defense :floor
+                                                        :neutral :floor
+                                                        (throw (ex-info "invalid value" {:favor favor
+                                                                                         :opts opts}))))
           defender-2nd (subtract defender-2nd-start airstrike-2nd-hits hits-required-for-full-step)
-          defender-2nd-hits (dice-roll defender-2nd :floor)
+          defender-2nd-hits (dice-roll defender-2nd (case favor
+                                                      :offense :floor
+                                                      :defense :ceil
+                                                      :neutral :floor
+                                                      (throw (ex-info "invalid value" {:favor favor
+                                                                                       :opts opts}))))
           attacker-2nd (subtract attacker-2nd-start defender-2nd-hits 1)
-          attacker-2nd-hits (dice-roll attacker-2nd :ceil)
+          attacker-2nd-hits (dice-roll attacker-2nd (case favor
+                                                        :offense :ceil
+                                                        :defense :floor
+                                                        :neutral :floor
+                                                        (throw (ex-info "invalid value" {:favor favor
+                                                                                         :opts opts}))))
           defender-2nd-final (subtract defender-2nd attacker-2nd-hits hits-required-for-full-step)
           airstrike-2nd-reduced (subtract airstrike-1st-reduced 1 1)
           hits-dealt-1st-agg (calc-hits attacker-start defender-1st-hits 1)
@@ -2306,9 +2337,9 @@
              :hits-taken (+ hits-taken-1st-agg hits-taken-2nd-agg)}})))
 
 (defn wrap-simulation
-  [scenarios]
+  [opts scenarios]
   (->> scenarios
-    (map (fn [scenario] {scenario (simulate scenario)}))
+    (map (fn [scenario] {scenario (simulate scenario opts)}))
     (mapcat vals)))
 
 (defn firepower-explained
@@ -2416,7 +2447,7 @@
   ((dices-thrown reinforcements) p 0))
 
 (defn to-csv
-  [scenarios hq-activation]
+  [scenarios hq-activation opts]
   (assert (#{:regular :blitz} hq-activation))
   (let [scope (case hq-activation
                 :regular [:1st :agg]
@@ -2425,7 +2456,7 @@
                        :regular :1st
                        :blitz :2nd)]
     (->> scenarios
-      (wrap-simulation)
+      (wrap-simulation opts)
       ;; group together different airstrike (SF, DF, TF) scenarios
       (group-by (juxt #(conj [] (-> %
                                   (get-in [:scenario 0 0])
@@ -2580,77 +2611,79 @@
       (remove #(->> % first (re-find #"TF.+TF"))))))
 
 (defn to-csv!
-  [scenarios scope label]
-  (with-open [writer (io/writer (format "simulate-%s.%s.csv"
-                                        (name scope)
-                                        (name label)))]
-    (csv/write-csv writer
-                   (concat [["Scenario"
-                             "Defense rate"
-                             "Defender"
-                             "Attacker"
-                             "Airstrike CVs"
+  ([scenarios scope label]
+   (to-csv! scenarios scope label {:favor :offense}))
+  ([scenarios scope label opts]
+   (with-open [writer (io/writer (format "simulate-%s.%s.csv"
+                                         (name scope)
+                                         (name label)))]
+     (csv/write-csv writer
+                    (concat [["Scenario"
+                              "Defense rate"
+                              "Defender"
+                              "Attacker"
+                              "Airstrike CVs"
 
-                             "Blocks defender"
-                             "CVs defender"
+                              "Blocks defender"
+                              "CVs defender"
 
-                             "Blocks attacker"
-                             "CVs attacker"
+                              "Blocks attacker"
+                              "CVs attacker"
 
-                             "Blocks reinforcements"
-                             "CVs reinforcements"
+                              "Blocks reinforcements"
+                              "CVs reinforcements"
 
-                             "SF blocks defender"
-                             "DF blocks defender"
-                             "TF blocks defender"
-                             "SF CVs defender"
-                             "DF CVs defender"
-                             "TF CVs defender"
+                              "SF blocks defender"
+                              "DF blocks defender"
+                              "TF blocks defender"
+                              "SF CVs defender"
+                              "DF CVs defender"
+                              "TF CVs defender"
 
-                             "SF blocks attacker"
-                             "DF blocks attacker"
-                             "TF blocks attacker"
-                             "SF CVs attacker"
-                             "DF CVs attacker"
-                             "TF CVs attacker"
+                              "SF blocks attacker"
+                              "DF blocks attacker"
+                              "TF blocks attacker"
+                              "SF CVs attacker"
+                              "DF CVs attacker"
+                              "TF CVs attacker"
 
-                             "SF blocks reinforcements"
-                             "DF blocks reinforcements"
-                             "TF blocks reinforcements"
-                             "SF CVs reinforcements"
-                             "DF CVs reinforcements"
-                             "TF CVs reinforcements"
+                              "SF blocks reinforcements"
+                              "DF blocks reinforcements"
+                              "TF blocks reinforcements"
+                              "SF CVs reinforcements"
+                              "DF CVs reinforcements"
+                              "TF CVs reinforcements"
 
-                             "Result defender (SF)"
-                             "Result defender (DF)"
-                             "Result defender (TF)"
+                              "Result defender (SF)"
+                              "Result defender (DF)"
+                              "Result defender (TF)"
 
-                             "Result attacker (SF)"
-                             "Result attacker (DF)"
-                             "Result attacker (TF)"
+                              "Result attacker (SF)"
+                              "Result attacker (DF)"
+                              "Result attacker (TF)"
 
-                             "Result blocks defender (SF)"
-                             "Result blocks defender (DF)"
-                             "Result blocks defender (TF)"
-                             "Result CVs defender (SF)"
-                             "Result CVs defender (DF)"
-                             "Result CVs defender (TF)"
+                              "Result blocks defender (SF)"
+                              "Result blocks defender (DF)"
+                              "Result blocks defender (TF)"
+                              "Result CVs defender (SF)"
+                              "Result CVs defender (DF)"
+                              "Result CVs defender (TF)"
 
-                             "Result blocks attacker (SF)"
-                             "Result blocks attacker (DF)"
-                             "Result blocks attacker (TF)"
-                             "Result CVs attacker (SF)"
-                             "Result CVs attacker (DF)"
-                             "Result CVs attacker (TF)"
+                              "Result blocks attacker (SF)"
+                              "Result blocks attacker (DF)"
+                              "Result blocks attacker (TF)"
+                              "Result CVs attacker (SF)"
+                              "Result CVs attacker (DF)"
+                              "Result CVs attacker (TF)"
 
-                             "Hits taken (SF)"
-                             "Hits taken (DF)"
-                             "Hits taken (TF)"
+                              "Hits taken (SF)"
+                              "Hits taken (DF)"
+                              "Hits taken (TF)"
 
-                             "Hits dealt (SF)"
-                             "Hits dealt (DF)"
-                             "Hits dealt (TF)"]]
-                           (to-csv scenarios scope)))))
+                              "Hits dealt (SF)"
+                              "Hits dealt (DF)"
+                              "Hits dealt (TF)"]]
+                            (to-csv scenarios scope opts))))))
 
 (comment
   (do
@@ -2674,8 +2707,54 @@
                               scenarios-4+2
                               scenarios-4+3
                               scenarios-4+4)]
-      (to-csv! *scenarios* :regular :all)
-      (to-csv! *scenarios* :blitz :all)))
+      (to-csv! *scenarios* :regular :all {:favor :offense})
+      (to-csv! *scenarios* :blitz :all {:favor :offense})))
+  (do
+    (let [*scenarios* (concat scenarios-1
+                              scenarios-1+1
+                              scenarios-1+2
+                              scenarios-1+3
+                              scenarios-1+4
+                              scenarios-2
+                              scenarios-2+1
+                              scenarios-2+2
+                              scenarios-2+3
+                              scenarios-2+4
+                              scenarios-3
+                              scenarios-3+1
+                              scenarios-3+2
+                              scenarios-3+3
+                              scenarios-3+4
+                              scenarios-4
+                              scenarios-4+1
+                              scenarios-4+2
+                              scenarios-4+3
+                              scenarios-4+4)]
+      (to-csv! *scenarios* :regular :all {:favor :defense})
+      (to-csv! *scenarios* :blitz :all {:favor :defense})))
+  (do
+    (let [*scenarios* (concat scenarios-1
+                              scenarios-1+1
+                              scenarios-1+2
+                              scenarios-1+3
+                              scenarios-1+4
+                              scenarios-2
+                              scenarios-2+1
+                              scenarios-2+2
+                              scenarios-2+3
+                              scenarios-2+4
+                              scenarios-3
+                              scenarios-3+1
+                              scenarios-3+2
+                              scenarios-3+3
+                              scenarios-3+4
+                              scenarios-4
+                              scenarios-4+1
+                              scenarios-4+2
+                              scenarios-4+3
+                              scenarios-4+4)]
+      (to-csv! *scenarios* :regular :all {:favor :neutral})
+      (to-csv! *scenarios* :blitz :all {:favor :neutral})))
   (do
     (to-csv! scenarios-1 :regular :1)
     (to-csv! scenarios-1 :blitz :1)
